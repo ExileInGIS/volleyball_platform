@@ -1,0 +1,2783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>校园运动队智能管理平台 · 南京大学女子排球队</title>
+<meta name="description" content="训练管理—球员管理—阵容管理—数据分析—比赛复盘 一体化平台" />
+<style>
+/* ============ 设计变量 · 南京大学紫 ============ */
+:root{
+  --purple:#722F86;
+  --purple-deep:#5C2470;
+  --purple-dark:#4A1D5C;
+  --purple-soft:#F3ECF6;
+  --purple-soft-2:#FAF6FC;
+  --purple-line:#E4D5EC;
+  --indigo:#8B5FB0;
+  --ink:#1F2430;
+  --ink-2:#4A5061;
+  --ink-3:#8A90A2;
+  --line:#ECECF1;
+  --bg:#F6F6F9;
+  --card:#FFFFFF;
+  --green:#2E9E6B; --green-bg:#E6F5EE;
+  --amber:#D9922B; --amber-bg:#FBF1E0;
+  --red:#D35555;   --red-bg:#FBEAEA;
+  --blue:#3E79C9;  --blue-bg:#E8F0FB;
+  --radius:14px;
+  --radius-sm:10px;
+  --shadow:0 1px 2px rgba(31,36,48,.04), 0 6px 20px rgba(31,36,48,.05);
+  --shadow-lg:0 12px 40px rgba(74,29,92,.18);
+  --c1:#722F86; --c2:#B07FD0; --c3:#3E79C9; --c4:#2E9E6B; --c5:#D9922B;
+  --font:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--purple);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink)}
+::placeholder{color:#B7BCC9}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#D8DAE3;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============ 布局 ============ */
+#app{display:grid;grid-template-columns:236px 1fr;grid-template-rows:64px 1fr;grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh}
+.sidebar{grid-area:sidebar;background:linear-gradient(180deg,var(--purple-dark),var(--purple-deep));color:#EBDDF3;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:40}
+.topbar{grid-area:topbar;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:30}
+.main{grid-area:main;padding:24px 26px 48px;max-width:1520px;width:100%}
+
+/* 品牌 */
+.brand{display:flex;align-items:center;gap:11px;padding:20px 20px 16px}
+.brand-logo{width:38px;height:38px;display:grid;place-items:center;background:rgba(255,255,255,.14);border-radius:11px;color:#fff}
+.brand-logo svg{width:23px;height:23px}
+.brand-text{display:flex;flex-direction:column;line-height:1.25}
+.brand-text strong{color:#fff;font-size:16px;letter-spacing:.5px}
+.brand-text small{color:#C9A9DA;font-size:10.5px;letter-spacing:1.5px}
+
+/* 导航 */
+.nav{flex:1;padding:6px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:10px;color:#D6BEE4;font-weight:500;font-size:13.5px;position:relative;transition:.15s;white-space:nowrap}
+.nav-item svg{width:18px;height:18px;flex:none}
+.nav-item:hover{background:rgba(255,255,255,.09);color:#fff}
+.nav-item.active{background:#fff;color:var(--purple-deep);font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.nav-item .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10.5px;border-radius:9px;padding:1px 6px;line-height:1.5}
+.nav-item.active .nav-badge{background:var(--purple);color:#fff}
+.nav-sec{font-size:10.5px;color:#B088C6;letter-spacing:1.5px;padding:14px 13px 5px}
+.sidebar-foot{padding:14px;border-top:1px solid rgba(255,255,255,.1)}
+.rs-label{display:block;font-size:11px;color:#C9A9DA;margin-bottom:7px}
+.rs-seg{display:flex;background:rgba(0,0,0,.2);border-radius:9px;padding:3px}
+.rs-btn{flex:1;padding:6px 4px;border-radius:7px;font-size:12px;color:#D6BEE4;transition:.15s}
+.rs-btn.active{background:#fff;color:var(--purple-deep);font-weight:600}
+
+/* 顶栏 */
+.menu-toggle{display:none}
+.tb-team{display:flex;align-items:baseline;gap:10px}
+.tb-team-name{font-weight:700;font-size:15.5px}
+.tb-team-tag{font-size:11.5px;color:var(--purple);background:var(--purple-soft);padding:2px 9px;border-radius:20px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.tb-date{color:var(--ink-3);font-size:13px}
+.tb-role{font-size:12px;color:var(--purple);background:var(--purple-soft);padding:4px 12px;border-radius:20px;font-weight:600}
+.icon-btn{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--ink-2);position:relative}
+.icon-btn:hover{background:var(--purple-soft);color:var(--purple)}
+.icon-btn svg{width:20px;height:20px}
+.notify-dot{position:absolute;top:8px;right:9px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid #fff}
+.tb-user{display:flex;align-items:center;gap:9px;padding-left:6px}
+.tb-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--indigo));color:#fff;display:grid;place-items:center;font-weight:700}
+.tb-user-meta{display:flex;flex-direction:column;line-height:1.3}
+.tb-user-meta strong{font-size:13.5px}
+.tb-user-meta small{font-size:11px;color:var(--ink-3)}
+
+/* 通知下拉 */
+.notify-wrap{position:relative}
+.notify-panel{position:absolute;right:0;top:50px;width:372px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);border:1px solid var(--line);padding:6px;display:none;max-height:440px;overflow:auto;z-index:60}
+.notify-panel.open{display:block}
+.np-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px 6px}
+.np-head strong{font-size:14px}
+.np-item{display:flex;gap:11px;padding:11px 12px;border-radius:10px}
+.np-item:hover{background:var(--purple-soft-2)}
+.np-ico{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none}
+.np-ico svg{width:17px;height:17px}
+.np-item p{font-size:13px;line-height:1.45}
+.np-item time{font-size:11px;color:var(--ink-3)}
+.np-all{display:block;text-align:center;padding:10px;font-size:13px;color:var(--purple);border-top:1px solid var(--line);margin-top:4px}
+
+/* ============ 通用组件 ============ */
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-title{font-size:21px;font-weight:700;display:flex;align-items:center;gap:10px}
+.page-title .pt-sub{font-size:13px;color:var(--ink-3);font-weight:400}
+.page-desc{color:var(--ink-3);font-size:13px;margin-top:4px}
+.head-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid #F1F0F5;padding:18px 20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;gap:10px}
+.card-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-title .ct-tag{font-size:11px;font-weight:500;color:var(--ink-3);background:var(--bg);padding:2px 8px;border-radius:6px}
+.card-link{font-size:12.5px;color:var(--purple);font-weight:500}
+.grid{display:grid;gap:16px}
+.g-2{grid-template-columns:repeat(2,1fr)}
+.g-3{grid-template-columns:repeat(3,1fr)}
+.g-4{grid-template-columns:repeat(4,1fr)}
+.g-5{grid-template-columns:repeat(5,1fr)}
+.section-gap{margin-top:18px}
+
+/* 按钮 */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-size:13.5px;font-weight:600;transition:.15s;border:1px solid transparent;white-space:nowrap}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-primary:hover{background:var(--purple-deep)}
+.btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
+.btn-ghost:hover{border-color:var(--purple);color:var(--purple)}
+.btn-soft{background:var(--purple-soft);color:var(--purple)}
+.btn-soft:hover{background:var(--purple-line)}
+.btn-danger-ghost{background:#fff;border-color:var(--red-bg);color:var(--red)}
+.btn-sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
+.btn-block{width:100%;justify-content:center}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 标签 */
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:2px 9px;border-radius:6px;font-weight:600;line-height:1.7}
+.tag-green{background:var(--green-bg);color:var(--green)}
+.tag-amber{background:var(--amber-bg);color:var(--amber)}
+.tag-red{background:var(--red-bg);color:var(--red)}
+.tag-blue{background:var(--blue-bg);color:var(--blue)}
+.tag-purple{background:var(--purple-soft);color:var(--purple)}
+.tag-gray{background:#F0F0F4;color:var(--ink-3)}
+.dot-tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px}
+.dot-tag i{width:7px;height:7px;border-radius:50%}
+
+/* 数据卡片 */
+.stat-card{background:#fff;border-radius:var(--radius);padding:17px 18px;border:1px solid #F1F0F5;box-shadow:var(--shadow);position:relative;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column;gap:7px}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(114,47,134,.12);border-color:var(--purple-line)}
+.stat-card .sc-top{display:flex;align-items:center;justify-content:space-between}
+.stat-card .sc-label{font-size:12.5px;color:var(--ink-3);font-weight:500}
+.stat-card .sc-ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
+.stat-card .sc-ico svg{width:18px;height:18px}
+.stat-card .sc-value{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.stat-card .sc-value small{font-size:14px;font-weight:600;color:var(--ink-3)}
+.stat-card .sc-foot{font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.trend-up{color:var(--green)} .trend-down{color:var(--red)} .trend-flat{color:var(--ink-3)}
+.stat-card .sc-spark{position:absolute;right:14px;bottom:12px;opacity:.9}
+.stat-card.accent-purple{background:linear-gradient(135deg,var(--purple),var(--purple-deep));color:#fff;border:none}
+.stat-card.accent-purple .sc-label,.stat-card.accent-purple .sc-foot{color:#E3CDEC}
+
+/* 训练内容卡 */
+.drill-card{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 15px;display:flex;flex-direction:column;gap:9px;transition:.15s}
+.drill-card:hover{border-color:var(--purple-line);box-shadow:var(--shadow)}
+.drill-top{display:flex;justify-content:space-between;align-items:center}
+.drill-name{font-weight:700;font-size:14.5px}
+.drill-time{font-size:12px;color:var(--ink-3)}
+.progress{height:7px;background:var(--purple-soft);border-radius:6px;overflow:hidden}
+.progress>span{display:block;height:100%;background:linear-gradient(90deg,var(--indigo),var(--purple));border-radius:6px;transition:width .6s}
+.drill-foot{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3)}
+
+/* 提醒列表 */
+.remind-list{display:flex;flex-direction:column;gap:4px}
+.remind-item{display:flex;gap:12px;padding:11px 10px;border-radius:10px;align-items:flex-start}
+.remind-item:hover{background:var(--purple-soft-2)}
+.remind-ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
+.remind-ico svg{width:16px;height:16px}
+.remind-item p{font-size:13px;line-height:1.5}
+.remind-item time{font-size:11px;color:var(--ink-3)}
+
+/* 表格 */
+.table-wrap{overflow:auto;border-radius:var(--radius-sm)}
+table.data-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.data-table th{text-align:left;padding:11px 14px;color:var(--ink-3);font-weight:600;font-size:12.5px;background:#FAFAFC;border-bottom:1px solid var(--line);white-space:nowrap}
+.data-table td{padding:13px 14px;border-bottom:1px solid #F4F3F7;vertical-align:middle}
+.data-table tbody tr{transition:.12s;cursor:pointer}
+.data-table tbody tr:hover{background:var(--purple-soft-2)}
+.data-table tbody tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.cell-player{display:flex;align-items:center;gap:10px}
+.cell-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex:none}
+.cell-player .cp-meta{display:flex;flex-direction:column;line-height:1.3}
+.cell-player .cp-meta small{color:var(--ink-3);font-size:11.5px}
+.att-pill{font-weight:700;font-variant-numeric:tabular-nums}
+
+/* 筛选工具栏 */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.search-box{position:relative;flex:1;min-width:210px;max-width:300px}
+.search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-3)}
+.search-box input{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.search-box input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-soft)}
+.select{padding:9px 32px 9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A90A2' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 11px center;appearance:none;min-width:110px}
+.select:focus{outline:none;border-color:var(--purple)}
+.seg{display:inline-flex;background:#F0EEF4;border-radius:10px;padding:3px}
+.seg button{padding:7px 15px;border-radius:8px;font-size:13px;font-weight:500;color:var(--ink-2)}
+.seg button.active{background:#fff;color:var(--purple-deep);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* 表单 */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-field{display:flex;flex-direction:column;gap:6px}
+.form-field.full{grid-column:1/-1}
+.form-field label{font-size:13px;font-weight:600;color:var(--ink-2)}
+.form-field label .req{color:var(--red)}
+.form-field .hint{font-size:11.5px;color:var(--ink-3)}
+.input,.textarea,.select-input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.input:focus,.textarea:focus,.select-input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-soft)}
+.textarea{resize:vertical;min-height:78px}
+.chip-input{display:flex;flex-wrap:wrap;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px;min-height:44px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--purple-soft);color:var(--purple);font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:8px}
+.chip button{color:var(--indigo);display:flex}
+.chip button svg{width:13px;height:13px}
+
+/* 时间线 */
+.timeline{position:relative;padding-left:22px}
+.timeline::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--purple-line)}
+.tl-item{position:relative;padding:0 0 18px}
+.tl-item::before{content:"";position:absolute;left:-22px;top:4px;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid var(--purple)}
+.tl-item.muted::before{border-color:var(--ink-3)}
+.tl-time{font-size:12px;color:var(--ink-3)}
+.tl-title{font-weight:600;font-size:14px}
+.tl-desc{font-size:12.5px;color:var(--ink-2)}
+
+/* 周计划 */
+.week-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.plan-card{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:.15s;background:#fff}
+.plan-card:hover{border-color:var(--purple-line);box-shadow:var(--shadow);transform:translateY(-2px)}
+.plan-card .pc-day{background:var(--purple-soft);color:var(--purple-deep);padding:10px 15px;font-weight:700;font-size:13px;display:flex;justify-content:space-between}
+.plan-card .pc-body{padding:14px 15px;display:flex;flex-direction:column;gap:7px}
+.plan-card .pc-theme{font-weight:700;font-size:15px}
+.plan-card .pc-meta{font-size:12.5px;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.plan-card .pc-meta svg{width:14px;height:14px}
+
+/* 月历 */
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.cal-head{text-align:center;font-size:12px;color:var(--ink-3);font-weight:600;padding:4px}
+.cal-cell{min-height:88px;border:1px solid var(--line);border-radius:10px;padding:7px;font-size:12px;background:#fff}
+.cal-cell.out{background:#FAFAFC;color:#C3C7D1}
+.cal-cell.today{border-color:var(--purple);box-shadow:0 0 0 2px var(--purple-soft)}
+.cal-num{font-weight:700;font-size:12.5px}
+.cal-ev{margin-top:4px;background:var(--purple-soft);color:var(--purple-deep);border-radius:6px;padding:3px 6px;font-size:11px;line-height:1.35;cursor:pointer}
+
+/* 阵容 / 球场 */
+.lineup-wrap{display:grid;grid-template-columns:minmax(360px,1fr) 320px;gap:20px}
+.court-box{background:var(--purple-soft-2);border:1px solid var(--purple-line);border-radius:var(--radius);padding:18px}
+.court{width:100%;height:auto;display:block}
+.slot-node{cursor:pointer}
+.slot-node .slot-circle{fill:#fff;stroke:var(--purple);stroke-width:2;transition:.15s}
+.slot-node:hover .slot-circle{fill:var(--purple-soft)}
+.slot-node.drag-over .slot-circle{fill:var(--purple);stroke:var(--purple-deep)}
+.slot-node .slot-pos{fill:var(--purple);font-size:11px;font-weight:700}
+.slot-node .slot-name{fill:var(--ink);font-size:12px;font-weight:700}
+.slot-node .slot-num{fill:#fff;font-size:11px;font-weight:700}
+.slot-node.empty .slot-circle{stroke-dasharray:5 4;stroke:var(--indigo)}
+.bench-card{display:flex;flex-direction:column;gap:10px}
+.bench-group-title{font-size:12px;color:var(--ink-3);font-weight:600;margin:6px 0 -2px}
+.player-chip{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:grab;transition:.13s}
+.player-chip:hover{border-color:var(--purple);box-shadow:var(--shadow)}
+.player-chip.dragging{opacity:.45}
+.player-chip .pc-num{width:26px;height:26px;border-radius:7px;background:var(--purple-soft);color:var(--purple);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+.player-chip .pc-info{flex:1;line-height:1.3;min-width:0}
+.player-chip .pc-info strong{font-size:13px;display:block}
+.player-chip .pc-info small{font-size:11px;color:var(--ink-3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lineup-alert{display:flex;gap:10px;padding:11px 14px;border-radius:10px;font-size:13px;align-items:flex-start}
+.lineup-alert svg{width:18px;height:18px;flex:none;margin-top:1px}
+.la-error{background:var(--red-bg);color:#A23A3A}
+.la-info{background:var(--blue-bg);color:#2E5F9E}
+.la-ok{background:var(--green-bg);color:#247A52}
+
+/* 比赛 */
+.match-card{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;background:#fff;transition:.15s;cursor:pointer}
+.match-card:hover{border-color:var(--purple-line);box-shadow:var(--shadow)}
+.match-teams{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+.match-team{font-weight:700;font-size:15px}
+.match-vs{color:var(--ink-3);font-size:12px;font-weight:600}
+.match-score{font-size:20px;font-weight:800;color:var(--purple-deep);font-variant-numeric:tabular-nums}
+.match-meta{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink-3);align-items:flex-end;text-align:right}
+.match-meta span{display:inline-flex;align-items:center;gap:5px}
+.match-meta svg{width:13px;height:13px}
+
+/* 球员信息提示卡 */
+.info-tip{background:var(--purple-soft-2);border:1px dashed var(--purple-line);border-radius:10px;padding:10px 13px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
+.info-tip strong{color:var(--purple-deep)}
+
+/* 签到 */
+.checkin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.checkin-item{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:#fff}
+.checkin-item .ci-name{flex:1;line-height:1.3}
+.checkin-item .ci-name strong{font-size:13.5px;display:block}
+.checkin-item .ci-name small{font-size:11.5px;color:var(--ink-3)}
+.status-select{padding:6px 8px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600}
+.status-select.s-present{color:var(--green);background:var(--green-bg);border-color:transparent}
+.status-select.s-leave{color:var(--amber);background:var(--amber-bg);border-color:transparent}
+.status-select.s-absent{color:var(--red);background:var(--red-bg);border-color:transparent}
+.status-select.s-late{color:var(--blue);background:var(--blue-bg);border-color:transparent}
+
+/* 详情头部 */
+.detail-hero{display:flex;align-items:center;gap:18px;background:linear-gradient(120deg,var(--purple),var(--purple-deep));color:#fff;border-radius:var(--radius);padding:22px 24px;margin-bottom:18px}
+.detail-hero .dh-avatar{width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:26px;font-weight:800}
+.detail-hero h2{font-size:23px}
+.detail-hero .dh-tags{display:flex;gap:8px;margin-top:7px}
+.detail-hero .dh-tag{background:rgba(255,255,255,.16);padding:3px 11px;border-radius:20px;font-size:12px}
+.detail-hero .dh-back{margin-right:4px;color:#E3CDEC;display:flex}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2);margin-bottom:14px;font-weight:500}
+.back-link:hover{color:var(--purple)}
+.back-link svg{width:16px;height:16px}
+
+/* 描述列表 */
+.desc-list{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.desc-list .dl-item{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.desc-list .dl-item dt{color:var(--ink-3)}
+.desc-list .dl-item dd{font-weight:600}
+
+/* 通知页 */
+.notice-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.notice-tab{padding:7px 16px;border-radius:20px;font-size:13px;background:#fff;border:1px solid var(--line);color:var(--ink-2);font-weight:500}
+.notice-tab.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.notice-item{display:flex;gap:14px;padding:16px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:11px}
+.notice-item .ni-ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none}
+.notice-item .ni-ico svg{width:20px;height:20px}
+.notice-item h4{font-size:14px}
+.notice-item p{font-size:13px;color:var(--ink-2);margin-top:2px}
+.notice-item time{font-size:11.5px;color:var(--ink-3)}
+
+/* 设置 */
+.setting-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.set-tab{padding:8px 16px;border-radius:10px;font-size:13.5px;font-weight:500;color:var(--ink-2)}
+.set-tab.active{background:var(--purple-soft);color:var(--purple-deep);font-weight:700}
+.perm-table th,.perm-table td{text-align:center}
+.perm-table th:first-child,.perm-table td:first-child{text-align:left}
+.switch{position:relative;width:42px;height:24px;display:inline-block}
+.switch input{opacity:0;width:0;height:0}
+.switch .sl{position:absolute;inset:0;background:#D6D8E0;border-radius:20px;transition:.2s}
+.switch .sl::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked+.sl{background:var(--purple)}
+.switch input:checked+.sl::before{transform:translateX(18px)}
+
+/* 弹窗 */
+.modal-mask{position:fixed;inset:0;background:rgba(31,24,40,.45);display:grid;place-items:center;z-index:100;padding:20px;backdrop-filter:blur(2px)}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg);animation:pop .18s ease}
+.modal.lg{max-width:760px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+.modal-head h3{font-size:16.5px}
+.modal-body{padding:22px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--line);position:sticky;bottom:0;background:#fff}
+.modal-close{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--ink-3)}
+.modal-close:hover{background:var(--bg)}
+@keyframes pop{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+
+/* Toast */
+.toast-root{position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:9px;align-items:center}
+.toast{display:flex;align-items:center;gap:9px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:11px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:pop .2s}
+.toast svg{width:17px;height:17px}
+.toast.ok{background:var(--green)} .toast.err{background:var(--red)} .toast.info{background:var(--purple)}
+
+/* 空态 */
+.empty{text-align:center;padding:50px 20px;color:var(--ink-3)}
+.empty svg{width:48px;height:48px;margin-bottom:10px;opacity:.5}
+
+/* 球员模式只读遮罩 */
+.readonly-note{display:flex;align-items:center;gap:8px;background:var(--amber-bg);color:#9A6A22;border-radius:10px;padding:9px 14px;font-size:12.5px;margin-bottom:16px}
+.readonly-note svg{width:16px;height:16px}
+
+/* ============ 响应式 ============ */
+@media (max-width:1180px){
+  .g-5{grid-template-columns:repeat(3,1fr)}
+  .lineup-wrap{grid-template-columns:1fr}
+  .week-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  #app{grid-template-columns:1fr;grid-template-areas:"topbar" "main"}
+  .sidebar{position:fixed;left:0;top:0;transform:translateX(-100%);transition:.25s;width:250px}
+  .sidebar.open{transform:none}
+  .menu-toggle{display:grid}
+  .g-4{grid-template-columns:repeat(2,1fr)}
+  .g-3{grid-template-columns:1fr}
+  .g-2{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .checkin-grid{grid-template-columns:1fr}
+  .tb-user-meta,.tb-date{display:none}
+  .main{padding:18px 15px 40px}
+}
+@media (max-width:560px){
+  .g-5,.g-4{grid-template-columns:1fr}
+  .week-grid{grid-template-columns:1fr}
+  .tb-team-tag{display:none}
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 左侧导航 -->
+  <aside id="sidebar" class="sidebar">
+    <div class="brand">
+      <span class="brand-logo" data-icon="volleyball"></span>
+      <span class="brand-text">
+        <strong>校队智管</strong>
+        <small>Campus Team Hub</small>
+      </span>
+    </div>
+    <nav id="nav" class="nav"></nav>
+    <div class="sidebar-foot">
+      <div class="role-switch">
+        <span class="rs-label">当前视角</span>
+        <div class="rs-seg">
+          <button class="rs-btn active" data-role="coach">教练/队长</button>
+          <button class="rs-btn" data-role="player">球员</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 顶部信息栏 -->
+  <header id="topbar" class="topbar">
+    <button id="menuToggle" class="icon-btn menu-toggle" aria-label="菜单"><span data-icon="menu"></span></button>
+    <div class="tb-team">
+      <span class="tb-team-name">南京大学女子排球队</span>
+      <span class="tb-team-tag">2026 赛季</span>
+    </div>
+    <div class="tb-right">
+      <span id="tbDate" class="tb-date"></span>
+      <span id="tbRole" class="tb-role">队长</span>
+      <div class="notify-wrap">
+        <button id="notifyBtn" class="icon-btn" aria-label="通知">
+          <span data-icon="bell"></span>
+          <span id="notifyDot" class="notify-dot"></span>
+        </button>
+        <div id="notifyPanel" class="notify-panel"></div>
+      </div>
+      <div class="tb-user">
+        <div class="tb-avatar">林</div>
+        <div class="tb-user-meta">
+          <strong>林知夏</strong>
+          <small>队长 · 二传</small>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容 -->
+  <main id="main" class="main"></main>
+</div>
+
+<!-- 弹窗容器 -->
+<div id="modalRoot"></div>
+<div id="toastRoot" class="toast-root"></div>
+
+<script>
+/* ===== js/data.js ===== */
+/* =========================================================
+ * data.js — 模拟数据层（南京大学女子排球队）
+ * 所有出勤类指标均由出勤记录动态计算，保证内部一致性。
+ * ========================================================= */
+(function () {
+  const VBM = (window.VBM = window.VBM || {});
+  VBM.D = {};
+  VBM.state = { role: 'coach', currentPlayerId: 1 };
+
+  /* ---------- 工具 ---------- */
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  function addDays(base, n) { const d = new Date(base); d.setDate(d.getDate() + n); return d; }
+  // 确定性伪随机
+  function hash() {
+    let h = 2166136261;
+    for (const s of arguments) {
+      const str = String(s);
+      for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    }
+    return ((h >>> 0) % 10000) / 10000;
+  }
+
+  VBM.util = { pad, fmt, WEEK, addDays, hash };
+
+  const today = new Date();
+  const TODAY_STR = fmt(today);
+  VBM.D.today = TODAY_STR;
+
+  const POSITIONS = ['主攻', '副攻', '二传', '接应', '自由人'];
+  const POS_COLOR = { '主攻': '#722F86', '副攻': '#3E79C9', '二传': '#D9922B', '接应': '#B05A9E', '自由人': '#2E9E6B' };
+
+  /* ---------- 球员基础信息（18 人） ---------- */
+  const rawPlayers = [
+    ['沈若瑶', 20232101, '主攻', '2023级', 184, 72, '右手', 97],
+    ['顾明曦', 20232102, '主攻', '2023级', 181, 70, '右手', 95],
+    ['陈雨桐', 20252103, '主攻', '2025级', 186, 74, '右手', 85],
+    ['宋清然', 20242104, '主攻', '2024级', 182, 69, '左手', 93],
+    ['韩书宁', 20252105, '主攻', '2025级', 180, 68, '右手', 90],
+    ['苏亦晴', 20232201, '副攻', '2023级', 187, 73, '右手', 94],
+    ['周予安', 20242202, '副攻', '2024级', 185, 71, '右手', 91],
+    ['吴清扬', 20242203, '副攻', '2024级', 183, 70, '右手', 89],
+    ['褚一凡', 20252204, '副攻', '2025级', 184, 70, '右手', 84],
+    ['林知夏', 20232301, '二传', '2023级', 176, 64, '右手', 98],
+    ['钟灵韵', 20242302, '二传', '2024级', 174, 62, '右手', 92],
+    ['白露白', 20252303, '二传', '2025级', 175, 63, '右手', 87],
+    ['叶予笙', 20232401, '接应', '2023级', 180, 68, '右手', 93],
+    ['高语墨', 20242402, '接应', '2024级', 179, 67, '左手', 90],
+    ['蒋若溪', 20252403, '接应', '2025级', 178, 66, '右手', 86],
+    ['秦晚棠', 20232501, '自由人', '2023级', 170, 60, '右手', 97],
+    ['冯小夏', 20242502, '自由人', '2024级', 169, 59, '右手', 88],
+    ['许念安', 20252503, '自由人', '2025级', 171, 61, '右手', 92]
+  ];
+
+  /* ---------- 训练课（最近约 4 周，固定周一/三/五/日，含今日） ---------- */
+  const themeByDay = {
+    1: ['基础技术', ['垫球', '传球', '步法移动'], '巩固垫传基础与场上移动步法'],
+    3: ['接发球专项', ['接发球', '防守', '发球'], '提升一传稳定性与发球质量'],
+    5: ['六人配合', ['扣球', '拦网', '六人配合'], '强化攻防转换与整体配合'],
+    0: ['模拟比赛', ['模拟对抗', '战术配合'], '以赛代练，检验训练成果']
+  };
+  const trainings = [];
+  for (let off = -27; off <= 0; off++) {
+    const d = addDays(today, off);
+    const wd = d.getDay();
+    if (off !== 0 && ![0, 1, 3, 5].includes(wd)) continue;
+    let theme, drills, goal;
+    if (off === 0) {
+      theme = '接发球与团队配合';
+      drills = ['接发球', '防守', '扣球', '六人配合'];
+      goal = '强化接发球到位率，演练六人攻防轮转配合';
+    } else {
+      [theme, drills, goal] = themeByDay[wd];
+    }
+    trainings.push({
+      id: 'T' + (1000 + trainings.length + 1),
+      date: fmt(d),
+      weekday: WEEK[wd],
+      start_time: wd === 0 ? '15:00' : '19:00',
+      end_time: wd === 0 ? '17:00' : '21:00',
+      location: '南京大学体育馆',
+      title: theme,
+      goal,
+      content: drills.join('、'),
+      drills: drills,
+      expected_count: 18,
+      actual_count: null,
+      completion_rate: off === 0 ? 80 : Math.round(78 + hash('comp', off) * 16),
+      remark: '',
+      isNew: false
+    });
+  }
+  trainings.sort((a, b) => a.date.localeCompare(b.date));
+  const todayTr = trainings.find(t => t.date === TODAY_STR);
+
+  /* ---------- 出勤记录（Attendance） ---------- */
+  const attendance = [];
+  const N = trainings.length;
+  const ti = id => trainings.findIndex(t => t.id === id);
+  // 球员目标出勤率（来自 raw 末位）
+  const targetRate = {};
+  rawPlayers.forEach((r, i) => targetRate[i + 1] = r[7]);
+
+  // 每名球员的状态矩阵（先全部 present）
+  const matrix = rawPlayers.map(() => trainings.map(() => 'present'));
+  // 固定覆盖今日：陈雨桐缺勤、褚一凡连续两次缺勤、蒋若溪请假
+  matrix[2][N - 1] = 'absent';
+  matrix[8][N - 1] = 'absent'; matrix[8][N - 2] = 'absent';
+  matrix[14][N - 1] = 'leave';
+
+  // 每名球员期望的非出勤场次（依据其目标出勤率）
+  const want = rawPlayers.map((r, idx) => {
+    const fixed = matrix[idx].filter(s => s !== 'present').length;
+    return Math.max(fixed, Math.round(N * (1 - r[7] / 100)));
+  });
+  // 全局非出勤名额：使球队整体出勤率精确等于 91%
+  const totalSlots = rawPlayers.length * N;
+  const globalNon = totalSlots - Math.round(0.91 * totalSlots);
+  // 微调个人期望，使总数等于全局名额
+  while (want.reduce((a, b) => a + b, 0) < globalNon) {
+    // 优先加到当前出勤率最高（非出勤占比最低）的球员，保持个体数据合理
+    let pick = 0, lowest = 1;
+    want.forEach((w, i) => { const nonRate = w / N; if (nonRate < lowest && w < N - 1) { lowest = nonRate; pick = i; } });
+    want[pick]++;
+  }
+  while (want.reduce((a, b) => a + b, 0) > globalNon) {
+    let pick = 0, worst = 2;
+    want.forEach((w, i) => { const rate = 1 - w / N; const fixed = matrix[i].filter(s => s !== 'present').length;
+      if (rate < worst && w > fixed) { worst = rate; pick = i; } });
+    want[pick]--;
+  }
+  // 确定性地把非出勤状态安排到具体场次（今日固定值除外）
+  matrix.forEach((row, idx) => {
+    const fixed = row.filter(s => s === 'absent' || s === 'leave').length;
+    let need = want[idx] - fixed;
+    const reserved = idx === 8 ? [N - 1, N - 2] : [N - 1];
+    const order = trainings.map((t, i) => i)
+      .filter(i => !reserved.includes(i) && row[i] === 'present')
+      .sort((a, b) => hash('att', idx + 1, a) - hash('att', idx + 1, b));
+    let k = 0;
+    while (need > 0 && k < order.length) {
+      const i = order[k++];
+      row[i] = hash('kind', idx + 1, i) < 0.72 ? 'absent' : 'leave'; // 仅缺勤/请假计入非出勤
+      need--;
+    }
+  });
+  // 迟到单独安排（计入出勤，但单独展示），不影响 91% 口径
+  matrix.forEach((row, idx) => {
+    const reserved = idx === 8 ? [N - 1, N - 2] : [N - 1];
+    const lateWant = Math.round(hash('lateW', idx + 1) * 1.1);
+    const cand = trainings.map((t, i) => i).filter(i => !reserved.includes(i) && row[i] === 'present')
+      .sort((a, b) => hash('lateO', idx + 1, a) - hash('lateO', idx + 1, b));
+    for (let k = 0; k < lateWant && k < cand.length; k++) row[cand[k]] = 'late';
+  });
+
+  // 生成出勤记录与备注
+  matrix.forEach((row, idx) => {
+    const pid = idx + 1;
+    row.forEach((st, i) => {
+      let remark = '';
+      if (st === 'leave') remark = ['课程冲突', '身体不适请假', '家中有事', '考试复习'][Math.floor(hash('rm', pid, i) * 4)];
+      if (st === 'absent') remark = hash('ab', pid, i) < 0.5 ? '未说明原因' : '无故缺勤';
+      if (st === 'late') remark = '迟到约 ' + (10 + Math.floor(hash('lt', pid, i) * 21)) + ' 分钟';
+      attendance.push({ id: 'A' + attendance.length, training_id: trainings[i].id, player_id: pid, status: st, remark });
+    });
+  });
+
+  /* ---------- 技术统计（按位置校准 + 缩放对齐球队目标值） ---------- */
+  // 基础区间：[pass, spike, serve, block]
+  const baseRange = {
+    '主攻': [58, 50, 17, 18],
+    '副攻': [55, 52, 15, 30],
+    '二传': [66, 35, 20, 12],
+    '接应': [60, 55, 22, 20],
+    '自由人': [74, 20, 14, 8]
+  };
+  const teamTarget = { pass: 62, spike: 48, serve: 18, block: 24 };
+  const techBase = rawPlayers.map((r, i) => {
+    const [b] = [baseRange[r[2]]];
+    const j = () => (hash('tech', i + 1, r[2]) - 0.5) * 8;
+    return {
+      pass: Math.max(10, Math.round(b[0] + j())),
+      spike: Math.max(10, Math.round(b[1] + j())),
+      serve: Math.max(5, Math.round(b[2] + j() * 0.7)),
+      block: Math.max(4, Math.round(b[3] + j() * 0.8))
+    };
+  });
+  // 缩放到球队目标
+  ['pass', 'spike', 'serve', 'block'].forEach(key => {
+    const m = techBase.reduce((s, t) => s + t[key], 0) / techBase.length;
+    const f = teamTarget[key] / m;
+    techBase.forEach(t => { t[key] = Math.max(3, Math.min(85, Math.round(t[key] * f))); });
+  });
+
+  const players = rawPlayers.map((r, i) => ({
+    id: i + 1,
+    name: r[0],
+    number: i + 1,
+    position: r[2],
+    grade: r[3],
+    student_id: String(r[1]),
+    height: r[4],
+    weight: r[5],
+    hand: r[6],
+    attendance_rate: 0, // 稍后由出勤记录计算
+    training_completion_rate: Math.round(79 + hash('comp2', i + 1) * 14),
+    pass_rate: techBase[i].pass,
+    spike_success_rate: techBase[i].spike,
+    serve_score_rate: techBase[i].serve,
+    block_success_rate: techBase[i].block,
+    weekly: {
+      pass: [65, 63, 63, 58].map((v, w) => Math.max(20, v + Math.round((hash('wp', i, w) - .5) * 10))),
+      spike: [46, 47, 49, 50].map((v, w) => Math.max(10, v + Math.round((hash('ws', i, w) - .5) * 10)))
+    }
+  }));
+
+  /* ---------- 由出勤记录计算每名球员 / 每次训练的真实出勤 ---------- */
+  function recsOfTraining(tid) { return attendance.filter(a => a.training_id === tid); }
+  function recsOfPlayer(pid) { return attendance.filter(a => a.player_id === pid); }
+  const onTime = s => s === 'present' || s === 'late';
+
+  players.forEach(p => {
+    const recs = recsOfPlayer(p.id);
+    const ok = recs.filter(a => onTime(a.status)).length;
+    p.attendance_rate = Math.round((ok / recs.length) * 100);
+  });
+  trainings.forEach(t => {
+    const recs = recsOfTraining(t.id);
+    t.actual_count = recs.filter(a => onTime(a.status)).length;
+    t.leave_count = recs.filter(a => a.status === 'leave').length;
+    t.absent_count = recs.filter(a => a.status === 'absent').length;
+    t.late_count = recs.filter(a => a.status === 'late').length;
+  });
+
+  /* ---------- 比赛 ---------- */
+  const matchRaw = [
+    ['南京理工大学', -30, '南京理工大学体育馆', 'finished', 'W', '3:1'],
+    ['东南大学', -22, '南京大学体育馆', 'finished', 'L', '2:3'],
+    ['南京航空航天大学', -15, '南京航空航天大学体育馆', 'finished', 'W', '3:0'],
+    ['河海大学', -8, '南京大学体育馆', 'finished', 'W', '3:2'],
+    ['南京师范大学', -2, '南京师范大学体育馆', 'finished', 'W', '3:1'],
+    ['东南大学', 19, '南京大学体育馆', 'upcoming', null, null],
+    ['南京师范大学', 34, '南京大学体育馆', 'upcoming', null, null]
+  ];
+  const matches = matchRaw.map((m, i) => {
+    const d = addDays(today, m[1]);
+    const ma = {
+      id: 'M' + (i + 1),
+      opponent: m[0],
+      date: fmt(d),
+      location: m[2],
+      status: m[3],
+      result: m[4],
+      score: m[5],
+      stats: null
+    };
+    if (m[3] === 'finished') {
+      const won = m[4] === 'W';
+      ma.stats = {
+        pass_success: Math.round(60 + hash('mp', i) * 10),
+        serve_score: 7 + Math.round(hash('ms', i) * 8),
+        serve_error: 6 + Math.round(hash('mse', i) * 7),
+        spike_score: 38 + Math.round(hash('mss', i) * 14),
+        spike_error: 10 + Math.round(hash('msp', i) * 9),
+        block_score: 6 + Math.round(hash('mb', i) * 8),
+        defense_success: 30 + Math.round(hash('md', i) * 16),
+        score: won ? 75 + Math.round(hash('msc', i) * 12) : 68 + Math.round(hash('msc', i) * 8),
+        against: won ? 62 + Math.round(hash('ma2', i) * 12) : 78 + Math.round(hash('ma2', i) * 8)
+      };
+    }
+    return ma;
+  });
+
+  /* ---------- 阵容（Lineup） ---------- */
+  // 场上 6+1 槽位（2主攻/2副攻/二传/接应/自由人）
+  const slotDef = [
+    { key: 'oh1', pos: '主攻', x: 150, y: 92 },
+    { key: 'oh2', pos: '主攻', x: 330, y: 92 },
+    { key: 'mb1', pos: '副攻', x: 92, y: 250 },
+    { key: 'mb2', pos: '副攻', x: 388, y: 250 },
+    { key: 'set', pos: '二传', x: 150, y: 408 },
+    { key: 'opp', pos: '接应', x: 330, y: 408 },
+    { key: 'lib', pos: '自由人', x: 240, y: 250 }
+  ];
+  const startIds = [1, 2, 6, 7, 10, 13, 16]; // 首发
+  function buildLineup(matchId) {
+    const map = {};
+    slotDef.forEach((s, i) => { map[s.key] = { player_id: startIds[i], position: s.pos, starting: 1 }; });
+    return {
+      id: 'L' + matchId,
+      match_id: matchId,
+      name: '首发阵容 A',
+      slots: slotDef.map(s => s.key),
+      slotPos: Object.fromEntries(slotDef.map(s => [s.key, s.pos])),
+      map,
+      bench: players.filter(p => !startIds.includes(p.id)).map(p => p.id),
+      saved: true
+    };
+  }
+  const lineups = {};
+  matches.forEach(m => { lineups[m.id] = buildLineup(m.id); });
+  lineups['M6'].saved = false; // 即将到来的比赛尚未确认
+
+  /* ---------- 通知 ---------- */
+  const notices = [
+    { id: 'N1', type: '训练', title: '今日训练提醒', body: `今日 19:00 进行「${todayTr.title}」训练，地点：南京大学体育馆，请提前 15 分钟到场热身。`, when: '今天 08:00', unread: true },
+    { id: 'N2', type: '出勤', title: '签到未完成', body: '今日训练仍有 3 名球员未完成签到/确认，请及时跟进。', when: '今天 18:40', unread: true },
+    { id: 'N3', type: '比赛', title: '比赛倒计时', body: '距离下一场校际比赛（vs 东南大学）还有 19 天，比赛地点：南京大学体育馆。', when: '今天 09:00', unread: true },
+    { id: 'N4', type: '数据', title: '技术数据波动', body: '本周球队一传到位率较上周下降 5%，建议在下次训练中增加接发球专项内容。', when: '昨天 21:30', unread: true },
+    { id: 'N5', type: '出勤', title: '出勤异常提醒', body: '球员褚一凡近 2 次训练连续缺勤，请客观关注其出勤情况（系统不做能力或健康判断）。', when: '昨天 18:05', unread: false },
+    { id: 'N6', type: '训练', title: '周训练计划已发布', body: '本周共安排 4 次训练：基础技术 / 接发球专项 / 六人配合 / 模拟比赛。', when: '周一 09:00', unread: false },
+    { id: 'N7', type: '比赛', title: '比赛复盘已生成', body: '上一场 vs 南京师范大学（3:1）比赛数据已汇总，可进入比赛复盘查看。', when: '2 天前', unread: false },
+    { id: 'N8', type: '数据', title: '训练数据周报', body: '本月球队出勤率 91%，训练完成率 86%，数据摘要已生成。', when: '3 天前', unread: false },
+    { id: 'N9', type: '出勤', title: '请假申请', body: '球员蒋若溪提交今日训练请假申请，原因为课程冲突。', when: '今天 13:20', unread: true },
+    { id: 'N10', type: '训练', title: '训练完成度提醒', body: '本周训练计划尚有 1 项内容未标记完成。', when: '4 天前', unread: false }
+  ];
+
+  /* ---------- 挂载数据 ---------- */
+  Object.assign(VBM.D, {
+    players, trainings, attendance, matches, lineups, notices,
+    POSITIONS, POS_COLOR, slotDef,
+    teamTrend: {
+      attendance: [88, 90, 93, 92],
+      pass: [65, 63, 63, 58],
+      spike: [46, 47, 49, 50],
+      serve: [16, 17, 18, 19],
+      block: [21, 23, 24, 26]
+    }
+  });
+
+  /* ---------- 查询辅助 ---------- */
+  VBM.q = {
+    player: id => players.find(p => p.id === Number(id)),
+    training: id => trainings.find(t => t.id === id),
+    match: id => matches.find(m => m.id === id),
+    lineup: mid => lineups[mid],
+    recsOfTraining, recsOfPlayer,
+    onTime,
+    // 球队汇总指标（动态计算）
+    teamSummary() {
+      const mean = f => Math.round(players.reduce((s, p) => s + f(p), 0) / players.length);
+      // 出勤率按全体出勤记录的总体口径计算，避免逐人取整造成的偏差
+      const total = attendance.length;
+      const onTimeCount = attendance.filter(a => onTime(a.status)).length;
+      return {
+        attendance: Math.round(onTimeCount / total * 100),
+        completion: mean(p => p.training_completion_rate),
+        pass: mean(p => p.pass_rate),
+        spike: mean(p => p.spike_success_rate),
+        serve: mean(p => p.serve_score_rate),
+        block: mean(p => p.block_success_rate)
+      };
+    },
+    attendanceAnomalies() {
+      // 仅基于客观出勤记录的异常：近 4 次中非出勤 ≥2 次
+      const out = [];
+      players.forEach(p => {
+        const recs = recsOfPlayer(p.id).slice(-4);
+        const bad = recs.filter(a => !onTime(a.status));
+        if (bad.length >= 2) out.push({ player: p, bad: bad.length, total: recs.length });
+      });
+      return out;
+    }
+  };
+})();
+
+/* ===== js/charts.js ===== */
+/* =========================================================
+ * charts.js — 轻量原生 SVG 图表库（无外部依赖）
+ * sparkline / lineChart / multiLine / barChart / donut
+ * ========================================================= */
+(function () {
+  const VBM = window.VBM;
+  const NS = 'http://www.w3.org/2000/svg';
+  const PAL = ['#722F86', '#B07FD0', '#3E79C9', '#2E9E6B', '#D9922B'];
+  function el(name, attrs) {
+    const e = document.createElementNS(NS, name);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function path(data, w, h, pad, min, max) {
+    min = min === undefined ? Math.min(...data) : min;
+    max = max === undefined ? Math.max(...data) : max;
+    if (max === min) max = min + 1;
+    const dx = (w - pad * 2) / (data.length - 1);
+    return data.map((v, i) => {
+      const x = pad + i * dx;
+      const y = h - pad - ((v - min) / (max - min)) * (h - pad * 2);
+      return (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+    }).join(' ');
+  }
+
+  /* 迷你趋势图 */
+  function sparkline(data, opts = {}) {
+    const w = opts.w || 96, h = opts.h || 30, p = 3;
+    const svg = el('svg', { width: w, height: h, viewBox: `0 0 ${w} ${h}` });
+    const min = Math.min(...data) - 1, max = Math.max(...data) + 1;
+    const d = path(data, w, h, p, min, max);
+    if (opts.area !== false) {
+      const dx = (w - p * 2) / (data.length - 1);
+      const area = d + ` L ${(p + (data.length - 1) * dx).toFixed(1)} ${h - p} L ${p} ${h - p} Z`;
+      svg.appendChild(el('path', { d: area, fill: opts.fill || 'rgba(114,47,134,.12)', stroke: 'none' }));
+    }
+    svg.appendChild(el('path', { d, fill: 'none', stroke: opts.color || '#722F86', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+    const dx = (w - p * 2) / (data.length - 1);
+    const x = p + (data.length - 1) * dx;
+    const y = h - p - ((data[data.length - 1] - min) / (max - min)) * (h - p * 2);
+    svg.appendChild(el('circle', { cx: x, cy: y, r: 2.8, fill: opts.color || '#722F86' }));
+    return svg;
+  }
+
+  /* 折线图 */
+  function lineChart(data, labels, opts = {}) {
+    const w = opts.w || 560, h = opts.h || 250, pl = 38, pr = 16, pt = 18, pb = 30;
+    const color = opts.color || PAL[0];
+    const unit = opts.unit || '';
+    const iw = w - pl - pr, ih = h - pt - pb;
+    const min = (opts.min !== undefined ? opts.min : Math.min(...data) - 6);
+    const max = (opts.max !== undefined ? opts.max : Math.max(...data) + 6);
+    const svg = el('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%', class: 'svg-line' });
+    for (let i = 0; i <= 4; i++) {
+      const y = pt + (ih / 4) * i;
+      svg.appendChild(el('line', { x1: pl, x2: w - pr, y1: y, y2: y, stroke: '#EEEAF2', 'stroke-width': 1 }));
+      const val = Math.round(max - ((max - min) / 4) * i);
+      const t = el('text', { x: pl - 8, y: y + 4, 'text-anchor': 'end', 'font-size': 10.5, fill: '#9AA0AF' });
+      t.textContent = val;
+      svg.appendChild(t);
+    }
+    const dx = iw / (data.length - 1);
+    const py = v => pt + ih - ((v - min) / (max - min)) * ih;
+    let d = `M ${pl} ${py(data[0])}`;
+    data.forEach((v, i) => { if (i) d += ` L ${pl + dx * i} ${py(v)}`; });
+    svg.appendChild(el('path', { d: d + ` L ${pl + dx * (data.length - 1)} ${pt + ih} L ${pl} ${pt + ih} Z`, fill: opts.fill || 'rgba(114,47,134,.08)' }));
+    svg.appendChild(el('path', { d, fill: 'none', stroke: color, 'stroke-width': 2.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+    data.forEach((v, i) => {
+      const x = pl + dx * i, y = py(v);
+      svg.appendChild(el('circle', { cx: x, cy: y, r: 3.6, fill: '#fff', stroke: color, 'stroke-width': 2.4 }));
+      const t = el('text', { x, y: h - 9, 'text-anchor': 'middle', 'font-size': 11.5, fill: '#8A90A2' });
+      t.textContent = labels[i];
+      svg.appendChild(t);
+    });
+    const wrap = document.createElement('div');
+    wrap.style.position = 'relative';
+    wrap.appendChild(svg);
+    const tip = document.createElement('div');
+    Object.assign(tip.style, {
+      position: 'absolute', pointerEvents: 'none', background: '#2B2338', color: '#fff',
+      fontSize: '12px', padding: '5px 10px', borderRadius: '8px', opacity: 0, transform: 'translate(-50%,-120%)', whiteSpace: 'nowrap'
+    });
+    wrap.appendChild(tip);
+    svg.style.cursor = 'crosshair';
+    svg.addEventListener('mousemove', e => {
+      const rect = svg.getBoundingClientRect();
+      const rel = ((e.clientX - rect.left) / rect.width) * w;
+      let i = Math.round((rel - pl) / dx);
+      i = Math.max(0, Math.min(data.length - 1, i));
+      tip.style.left = ((pl + dx * i) / w * 100) + '%';
+      tip.style.top = (py(data[i]) / h * 100) + '%';
+      tip.style.opacity = 1;
+      tip.textContent = `${labels[i]}：${data[i]}${unit}`;
+    });
+    svg.addEventListener('mouseleave', () => { tip.style.opacity = 0; });
+    return wrap;
+  }
+
+  /* 多线对比 */
+  function multiLine(series, labels, opts = {}) {
+    const w = opts.w || 560, h = opts.h || 250, pl = 38, pr = 16, pt = 22, pb = 30;
+    const colors = opts.colors || PAL;
+    const iw = w - pl - pr, ih = h - pt - pb;
+    const all = series.flatMap(s => s.data);
+    const min = (opts.min !== undefined ? opts.min : Math.min(...all) - 5);
+    const max = (opts.max !== undefined ? opts.max : Math.max(...all) + 5);
+    const svg = el('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%' });
+    for (let i = 0; i <= 4; i++) {
+      const y = pt + (ih / 4) * i;
+      svg.appendChild(el('line', { x1: pl, x2: w - pr, y1: y, y2: y, stroke: '#EEEAF2' }));
+      const t = el('text', { x: pl - 8, y: y + 4, 'text-anchor': 'end', 'font-size': 10.5, fill: '#9AA0AF' });
+      t.textContent = Math.round(max - ((max - min) / 4) * i);
+      svg.appendChild(t);
+    }
+    const dx = iw / (labels.length - 1);
+    const py = v => pt + ih - ((v - min) / (max - min)) * ih;
+    series.forEach((s, si) => {
+      const dd = s.data.map((v, i) => `${i ? 'L' : 'M'} ${pl + dx * i} ${py(v)}`).join(' ');
+      svg.appendChild(el('path', { d: dd, fill: 'none', stroke: s.color || colors[si], 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+      s.data.forEach((v, i) => svg.appendChild(el('circle', { cx: pl + dx * i, cy: py(v), r: 3, fill: s.color || colors[si] })));
+    });
+    labels.forEach((lb, i) => {
+      const t = el('text', { x: pl + dx * i, y: h - 9, 'text-anchor': 'middle', 'font-size': 11.5, fill: '#8A90A2' });
+      t.textContent = lb; svg.appendChild(t);
+    });
+    let lx = pl;
+    series.forEach((s, si) => {
+      svg.appendChild(el('rect', { x: lx, y: 4, width: 9, height: 9, rx: 2, fill: s.color || colors[si] }));
+      const t = el('text', { x: lx + 13, y: 12, 'font-size': 11, fill: '#6B7080' });
+      t.textContent = s.name; svg.appendChild(t);
+      lx += 13 + s.name.length * 12 + 16;
+    });
+    return svg;
+  }
+
+  /* 柱状图 */
+  function barChart(data, labels, opts = {}) {
+    const w = opts.w || 720, h = opts.h || 280, pl = 36, pr = 12, pt = 18, pb = 64;
+    const color = opts.color || PAL[0];
+    const iw = w - pl - pr, ih = h - pt - pb;
+    const max = (opts.max !== undefined ? opts.max : Math.max(...data) + 8);
+    const svg = el('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%' });
+    for (let i = 0; i <= 4; i++) {
+      const y = pt + (ih / 4) * i;
+      svg.appendChild(el('line', { x1: pl, x2: w - pr, y1: y, y2: y, stroke: '#EEEAF2' }));
+      const t = el('text', { x: pl - 8, y: y + 4, 'text-anchor': 'end', 'font-size': 10.5, fill: '#9AA0AF' });
+      t.textContent = Math.round(max - (max / 4) * i); svg.appendChild(t);
+    }
+    const n = data.length, slot = iw / n, bw = Math.min(34, slot * 0.58);
+    data.forEach((v, i) => {
+      const x = pl + slot * i + (slot - bw) / 2;
+      const bh = (v / max) * ih;
+      const y = pt + ih - bh;
+      svg.appendChild(el('rect', { x, y, width: bw, height: bh, rx: 5, fill: color, opacity: .9 }));
+      const vt = el('text', { x: x + bw / 2, y: y - 5, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#5A5F6E', 'font-weight': 700 });
+      vt.textContent = v; svg.appendChild(vt);
+      const t = el('text', { x: x + bw / 2, y: pt + ih + 15, 'text-anchor': 'end', 'font-size': 10.5, fill: '#8A90A2', transform: `rotate(-38 ${x + bw / 2} ${pt + ih + 15})` });
+      t.textContent = labels[i]; svg.appendChild(t);
+    });
+    return svg;
+  }
+
+  /* 环形进度 */
+  function donut(value, opts = {}) {
+    const size = opts.size || 120, r = size / 2 - 11, c = size / 2;
+    const color = opts.color || PAL[0];
+    const svg = el('svg', { viewBox: `0 0 ${size} ${size}`, width: size, height: size });
+    svg.appendChild(el('circle', { cx: c, cy: c, r, fill: 'none', stroke: '#F0EAF4', 'stroke-width': 10 }));
+    const circ = 2 * Math.PI * r;
+    const arc = el('circle', {
+      cx: c, cy: c, r, fill: 'none', stroke: color, 'stroke-width': 10,
+      'stroke-linecap': 'round', transform: `rotate(-90 ${c} ${c})`,
+      'stroke-dasharray': circ, 'stroke-dashoffset': circ
+    });
+    svg.appendChild(arc);
+    requestAnimationFrame(() => {
+      arc.style.transition = 'stroke-dashoffset .8s ease';
+      arc.setAttribute('stroke-dashoffset', circ * (1 - value / 100));
+    });
+    const t = el('text', { x: c, y: c + 2, 'text-anchor': 'middle', 'font-size': opts.fs || 22, 'font-weight': 800, fill: opts.ink || '#1F2430' });
+    t.textContent = value + (opts.unit === undefined ? '%' : opts.unit);
+    svg.appendChild(t);
+    if (opts.label) {
+      const t2 = el('text', { x: c, y: c + 18, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#9AA0AF' });
+      t2.textContent = opts.label; svg.appendChild(t2);
+    }
+    return svg;
+  }
+
+  VBM.charts = { sparkline, lineChart, multiLine, barChart, donut, PAL };
+})();
+
+/* ===== js/components.js ===== */
+/* =========================================================
+ * components.js — 图标 / 弹窗 / Toast / 通用片段
+ * ========================================================= */
+(function () {
+  const VBM = window.VBM;
+
+  /* ---------- 线性图标（24x24，stroke） ---------- */
+  const ICONS = {
+    home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    clipboard: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+    grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+    chart: '<path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-8"/>',
+    settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/>',
+    bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+    menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+    search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    plus: '<path d="M5 12h14M12 5v14"/>',
+    x: '<path d="M18 6 6 18M6 6l18 18"/>',
+    'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+    'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+    'chevron-down': '<path d="m6 9 6 6 6-6"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/>',
+    info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+    volleyball: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+    user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/>',
+    save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>',
+    shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
+    trend: '<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
+    refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>',
+    target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+    mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+    phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/>',
+    database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>'
+  };
+  function icon(name, size) {
+    const body = ICONS[name] || ICONS.info;
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${size ? ` width="${size}" height="${size}"` : ''}>${body}</svg>`;
+  }
+  VBM.icon = icon;
+
+  /* 把容器内 [data-icon] 占位替换为 svg */
+  function hydrate(root) {
+    (root || document).querySelectorAll('[data-icon]').forEach(n => {
+      n.innerHTML = icon(n.getAttribute('data-icon'));
+      n.removeAttribute('data-icon');
+    });
+  }
+  VBM.hydrate = hydrate;
+
+  /* ---------- 通用片段 ---------- */
+  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  VBM.esc = esc;
+
+  function avatar(p, cls) {
+    const color = VBM.D.POS_COLOR[p.position];
+    return `<span class="cell-avatar ${cls || ''}" style="background:${color}">${esc(p.name[0])}</span>`;
+  }
+  VBM.avatar = avatar;
+
+  const ATT_STATUS = {
+    present: { text: '出勤', cls: 'tag-green' },
+    leave: { text: '请假', cls: 'tag-amber' },
+    absent: { text: '缺勤', cls: 'tag-red' },
+    late: { text: '迟到', cls: 'tag-blue' }
+  };
+  function statusTag(st) { const s = ATT_STATUS[st]; return `<span class="tag ${s.cls}">${s.text}</span>`; }
+  VBM.statusTag = statusTag;
+  VBM.ATT_STATUS = ATT_STATUS;
+
+  function trainStateTag(p) {
+    if (p.attendance_rate >= 90) return '<span class="tag tag-green">正常</span>';
+    if (p.attendance_rate >= 85) return '<span class="tag tag-amber">需关注</span>';
+    return '<span class="tag tag-red">重点跟进</span>';
+  }
+  VBM.trainStateTag = trainStateTag;
+
+  /* ---------- Toast ---------- */
+  function toast(msg, type = 'info') {
+    const root = document.getElementById('toastRoot');
+    const t = document.createElement('div');
+    t.className = 'toast ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info');
+    t.innerHTML = icon(type === 'ok' ? 'check' : type === 'err' ? 'alert' : 'info') + '<span>' + esc(msg) + '</span>';
+    root.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(-8px)'; t.style.transition = '.3s'; setTimeout(() => t.remove(), 300); }, 2200);
+  }
+  VBM.toast = toast;
+
+  /* ---------- Modal ---------- */
+  function modal(opt) {
+    const root = document.getElementById('modalRoot');
+    const mask = document.createElement('div');
+    mask.className = 'modal-mask';
+    mask.innerHTML = `<div class="modal ${opt.size === 'lg' ? 'lg' : ''}">
+      <div class="modal-head"><h3>${esc(opt.title || '')}</h3>
+        <button class="modal-close" data-close>${icon('x')}</button></div>
+      <div class="modal-body"></div>
+      ${opt.footer !== false ? '<div class="modal-foot"></div>' : ''}
+    </div>`;
+    root.appendChild(mask);
+    hydrate(mask);
+    const body = mask.querySelector('.modal-body');
+    if (opt.body instanceof Node) body.appendChild(opt.body);
+    else body.innerHTML = opt.body || '';
+    const foot = mask.querySelector('.modal-foot');
+    if (opt.buttons && foot) {
+      opt.buttons.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = 'btn ' + (b.primary ? 'btn-primary' : 'btn-ghost');
+        btn.innerHTML = (b.icon ? icon(b.icon) : '') + esc(b.text);
+        btn.onclick = () => b.onClick && b.onClick({ close: close, body });
+        foot.appendChild(btn);
+      });
+    }
+    function close() { mask.remove(); document.removeEventListener('keydown', onKey); }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onKey);
+    mask.addEventListener('mousedown', e => { if (e.target === mask && opt.dismissable !== false) close(); });
+    mask.querySelectorAll('[data-close]').forEach(b => b.onclick = close);
+    if (opt.onMount) opt.onMount(body, close);
+    hydrate(mask);
+    return { close, body, mask };
+  }
+  VBM.modal = modal;
+
+  /* 确认框 */
+  function confirmBox(text, onOk) {
+    modal({
+      title: '请确认',
+      body: `<p style="font-size:13.5px;line-height:1.7">${esc(text)}</p>`,
+      buttons: [
+        { text: '取消', onClick: ({ close }) => close() },
+        { text: '确认', primary: true, onClick: ({ close }) => { close(); onOk && onOk(); } }
+      ]
+    });
+  }
+  VBM.confirmBox = confirmBox;
+})();
+
+/* ===== js/pages/dashboard.js ===== */
+/* 首页 Dashboard */
+(function () {
+  const VBM = window.VBM;
+  const { icon, hydrate } = VBM;
+
+  function statCard(o) {
+    return `<div class="stat-card ${o.accent ? 'accent-purple' : ''}" ${o.go ? `data-go="${o.go}"` : ''}>
+      <div class="sc-top"><span class="sc-label">${o.label}</span>
+        <span class="sc-ico" style="background:${o.bg};color:${o.fg}">${icon(o.ico)}</span></div>
+      <div class="sc-value">${o.value}</div>
+      ${o.foot ? `<div class="sc-foot">${o.foot}</div>` : ''}
+      ${o.spark ? `<span class="sc-spark"></span>` : ''}
+    </div>`;
+  }
+
+  VBM.pages = VBM.pages || {};
+  VBM.pages.home = function (c) {
+    const D = VBM.D, t = D.trainings.find(x => x.date === D.today);
+    const S = VBM.q.teamSummary();
+    const isPlayer = VBM.state.role === 'player';
+
+    const reminders = [
+      { ico: 'users', c: 'var(--amber-bg)', f: 'var(--amber)', p: '3 名球员尚未确认今日训练（陈雨桐、褚一凡缺勤，蒋若溪请假）', tm: '今天' },
+      { ico: 'trophy', c: 'var(--purple-soft)', f: 'var(--purple)', p: '10 月 18 日有一场校际比赛：vs 东南大学（主场）', tm: '19 天后' },
+      { ico: 'clipboard', c: 'var(--blue-bg)', f: 'var(--blue)', p: '本周训练计划尚有 1 项内容未标记完成', tm: '本周' },
+      { ico: 'alert', c: 'var(--red-bg)', f: 'var(--red)', p: '球员褚一凡连续 2 次训练缺勤（仅客观出勤提示，不做能力/健康判断）', tm: '客观数据' }
+    ];
+
+    c.innerHTML = `
+      <div class="page-head">
+        <div>
+          <div class="page-title">今日概览 <span class="pt-sub">${t.weekday} · ${D.today}</span></div>
+          <div class="page-desc">10 秒掌握三件事：今天来了多少人 · 今天练什么 · 球队近期状态</div>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost" data-go="attendance">${icon('clipboard')} 去签到</button>
+          <button class="btn btn-primary" data-go="training/new">${icon('plus')} 新建训练</button>
+        </div>
+      </div>
+
+      <!-- 今日训练 -->
+      <div class="card" style="margin-bottom:16px;background:linear-gradient(110deg,#5C2470,#722F86);color:#fff;border:none;padding:20px 22px">
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;align-items:center">
+          <div>
+            <div style="font-size:12px;color:#D9BCE8;letter-spacing:1px">今日训练 · TODAY</div>
+            <div style="font-size:21px;font-weight:800;margin-top:3px">${t.title}</div>
+          </div>
+          <div style="display:flex;gap:26px;flex-wrap:wrap">
+            <div><div style="font-size:11.5px;color:#D9BCE8">${icon('clock')} 训练时间</div><div style="font-weight:700;margin-top:2px">${t.start_time}—${t.end_time}</div></div>
+            <div><div style="font-size:11.5px;color:#D9BCE8">${icon('pin')} 训练地点</div><div style="font-weight:700;margin-top:2px">${t.location}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g-4" style="margin-bottom:18px">
+        ${statCard({ label: '应到人数', value: `${t.expected_count}<small> 人</small>`, ico: 'users', bg: 'var(--purple-soft)', fg: 'var(--purple)', foot: '球队在册球员', go: 'players' })}
+        ${statCard({ label: '实到人数', value: `${t.actual_count}<small> 人</small>`, ico: 'check', bg: 'var(--green-bg)', fg: 'var(--green)', foot: '含迟到签到', go: `attendance/checkin?id=${t.id}` })}
+        ${statCard({ label: '缺勤人数', value: `${t.absent_count}<small> 人</small>`, ico: 'alert', bg: 'var(--red-bg)', fg: 'var(--red)', foot: `另有请假 ${t.leave_count} 人`, go: `attendance/checkin?id=${t.id}` })}
+        ${statCard({ label: '今日出勤率', value: Math.round(t.actual_count / t.expected_count * 100) + '%', ico: 'trend', bg: 'var(--amber-bg)', fg: 'var(--amber)', foot: '低于本月均值', go: 'attendance', spark: true })}
+      </div>
+
+      <!-- 今日训练内容 -->
+      <div class="card section-gap" style="margin-top:18px">
+        <div class="card-head"><div class="card-title">今日训练内容 <span class="ct-tag">${t.content}</span></div>
+          <span class="card-link" data-go="training">查看本周计划</span></div>
+        <div class="grid g-4">
+          ${[
+            ['接发球', 25, 90], ['防守', 25, 85], ['扣球', 30, 80], ['六人配合', 30, 75]
+          ].map(d => `<div class="drill-card">
+            <div class="drill-top"><span class="drill-name">${d[0]}</span><span class="drill-time">${d[1]} min</span></div>
+            <div class="progress"><span style="width:${d[2]}%"></span></div>
+            <div class="drill-foot"><span>完成度</span><strong>${d[2]}%</strong></div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- 球队状态 -->
+      <div class="card section-gap">
+        <div class="card-head"><div class="card-title">球队状态 <span class="ct-tag">近 4 周</span></div>
+          <span class="card-link" data-go="analytics">进入数据分析</span></div>
+        <div class="grid g-5">
+          ${[
+            ['本月出勤率', S.attendance, 'trend', D.teamTrend.attendance, '%', '#722F86'],
+            ['训练完成率', S.completion, 'target', D.teamTrend.spike, '%', '#3E79C9'],
+            ['一传到位率', S.pass, 'volleyball', D.teamTrend.pass, '%', '#2E9E6B'],
+            ['扣球成功率', S.spike, 'trend', D.teamTrend.spike, '%', '#D9922B'],
+            ['发球得分率', S.serve, 'target', D.teamTrend.serve, '%', '#B05A9E']
+          ].map((m, i) => `<div class="stat-card" data-go="analytics">
+            <div class="sc-top"><span class="sc-label">${m[0]}</span>
+              <span class="sc-ico" style="background:var(--purple-soft);color:${m[5]}">${icon(m[2])}</span></div>
+            <div class="sc-value">${m[1]}<small>${m[4]}</small></div>
+            <div class="sc-foot">${i === 2 ? '<span class="trend-down">较上周 -5%</span>' : '<span class="trend-up">保持稳定</span>'}</div>
+            <span class="sc-spark" data-spark="${m[3].join(',')}" style="--c:${m[5]}"></span>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- 今日提醒 + 快捷入口 -->
+      <div class="grid g-2 section-gap">
+        <div class="card">
+          <div class="card-head"><div class="card-title">${icon('bell')} 今日提醒</div></div>
+          <div class="remind-list">
+            ${reminders.map(r => `<div class="remind-item">
+              <span class="remind-ico" style="background:${r.c};color:${r.f}">${icon(r.ico)}</span>
+              <div><p>${r.p}</p><time>${r.tm}</time></div>
+            </div>`).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">${icon('grid')} 快捷操作</div></div>
+          <div class="grid g-2">
+            ${[
+              ['players', '球员管理', '查看 18 名球员档案', 'users'],
+              ['lineup?matchId=M6', '阵容配置', '配置下场比赛首发', 'grid'],
+              ['matches', '比赛管理', '赛程与比赛复盘', 'trophy'],
+              ['analytics', '数据分析', '趋势与球员对比', 'chart']
+            ].map(q => `<div class="stat-card" data-go="${q[0]}">
+              <span class="sc-ico" style="background:var(--purple-soft);color:var(--purple)">${icon(q[3])}</span>
+              <div style="font-weight:700;font-size:14px">${q[1]}</div>
+              <div class="sc-foot">${q[2]}</div>
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // sparkline 注入
+    c.querySelectorAll('[data-spark]').forEach(n => {
+      const arr = n.getAttribute('data-spark').split(',').map(Number);
+      const col = getComputedStyle(n).getPropertyValue('--c') || '#722F86';
+      n.appendChild(VBM.charts.sparkline(arr, { w: 90, h: 30, color: col }));
+    });
+
+    c.querySelectorAll('[data-go]').forEach(n => n.addEventListener('click', () => VBM.go(n.getAttribute('data-go'))));
+    hydrate(c);
+    if (isPlayer) VBM.playerize(c);
+  };
+})();
+
+/* ===== js/pages/players.js ===== */
+/* 球员管理 + 球员详情 */
+(function () {
+  const VBM = window.VBM;
+  const { icon, esc } = VBM;
+  VBM.pages = VBM.pages || {};
+
+  /* ---------------- 列表 ---------------- */
+  VBM.pages.players = function (c) {
+    const D = VBM.D;
+    c.innerHTML = `
+      <div class="page-head">
+        <div><div class="page-title">球员管理</div>
+          <div class="page-desc">在册球员 18 人 · 主攻5 / 副攻4 / 二传3 / 接应3 / 自由人3</div></div>
+        <div class="head-actions"><button class="btn btn-primary" id="addPlayer">${icon('plus')} 添加球员</button></div>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">${icon('search')}<input id="kw" placeholder="搜索姓名 / 学号 / 号码" /></div>
+          <select class="select" id="fPos"><option value="">全部位置</option>${D.POSITIONS.map(p => `<option>${p}</option>`).join('')}</select>
+          <select class="select" id="fGrade"><option value="">全部年级</option><option>2023级</option><option>2024级</option><option>2025级</option></select>
+          <select class="select" id="fAtt">
+            <option value="">全部出勤率</option><option value="90">≥90% 正常</option>
+            <option value="85">85–89% 需关注</option><option value="0"><85% 重点跟进</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr>
+              <th>姓名</th><th>学号</th><th>位置</th><th>年级</th><th class="num">出勤率</th><th>训练状态</th><th>操作</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>`;
+
+    const rows = c.querySelector('#rows');
+    function render() {
+      const kw = c.querySelector('#kw').value.trim();
+      const pos = c.querySelector('#fPos').value;
+      const grade = c.querySelector('#fGrade').value;
+      const att = c.querySelector('#fAtt').value;
+      const list = D.players.filter(p => {
+        if (kw && !(p.name.includes(kw) || p.student_id.includes(kw) || String(p.number).includes(kw))) return false;
+        if (pos && p.position !== pos) return false;
+        if (grade && p.grade !== grade) return false;
+        if (att !== '') {
+          if (att === '90' && p.attendance_rate < 90) return false;
+          if (att === '85' && !(p.attendance_rate >= 85 && p.attendance_rate < 90)) return false;
+          if (att === '0' && p.attendance_rate >= 85) return false;
+        }
+        return true;
+      });
+      rows.innerHTML = list.length ? list.map(p => `<tr data-id="${p.id}">
+        <td><div class="cell-player">${VBM.avatar(p)}<div class="cp-meta"><strong>${p.name}</strong><small>#${p.number} 球衣号</small></div></div></td>
+        <td>${p.student_id}</td>
+        <td><span class="tag tag-purple">${p.position}</span></td>
+        <td>${p.grade}</td>
+        <td class="num"><span class="att-pill" style="color:${p.attendance_rate >= 90 ? 'var(--green)' : p.attendance_rate >= 85 ? 'var(--amber)' : 'var(--red)'}">${p.attendance_rate}%</span></td>
+        <td>${VBM.trainStateTag(p)}</td>
+        <td><button class="btn btn-sm btn-soft" data-view="${p.id}">查看详情</button></td>
+      </tr>`).join('') : '<tr><td colspan="7"><div class="empty">未找到匹配的球员</div></td></tr>';
+      rows.querySelectorAll('[data-view]').forEach(b => b.onclick = e => { e.stopPropagation(); VBM.go('player/' + b.getAttribute('data-view')); });
+      rows.querySelectorAll('tr[data-id]').forEach(r => r.onclick = () => VBM.go('player/' + r.getAttribute('data-id')));
+    }
+    ['kw', 'fPos', 'fGrade', 'fAtt'].forEach(id => c.querySelector('#' + id).addEventListener('input', render));
+    c.querySelector('#addPlayer').onclick = addPlayerForm;
+    render();
+    if (VBM.state.role === 'player') VBM.playerize(c);
+  };
+
+  /* ---------------- 添加球员表单 ---------------- */
+  function addPlayerForm() {
+    VBM.modal({
+      title: '添加球员', size: 'lg',
+      body: `<div class="form-grid">
+        <div class="form-field"><label>姓名 <span class="req">*</span></label><input class="input" id="np_name"></div>
+        <div class="form-field"><label>学号 <span class="req">*</span></label><input class="input" id="np_sid" placeholder="如 20262601"></div>
+        <div class="form-field"><label>场上位置</label><select class="select-input" id="np_pos">${VBM.D.POSITIONS.map(p => `<option>${p}</option>`).join('')}</select></div>
+        <div class="form-field"><label>年级</label><select class="select-input" id="np_grade"><option>2023级</option><option>2024级</option><option selected>2025级</option><option>2026级</option></select></div>
+        <div class="form-field"><label>球衣号码</label><input class="input" id="np_num" type="number" value="${VBM.D.players.length + 1}"></div>
+        <div class="form-field"><label>惯用手</label><select class="select-input" id="np_hand"><option>右手</option><option>左手</option></select></div>
+        <div class="form-field"><label>身高 (cm)</label><input class="input" id="np_h" type="number"></div>
+        <div class="form-field"><label>体重 (kg)</label><input class="input" id="np_w" type="number"></div>
+      </div>`,
+      buttons: [
+        { text: '取消', onClick: ({ close }) => close() },
+        {
+          text: '添加', primary: true,
+          onClick: ({ close, body }) => {
+            const name = body.querySelector('#np_name').value.trim();
+            if (!name) { VBM.toast('请填写球员姓名', 'err'); return; }
+            const pos = body.querySelector('#np_pos').value;
+            const id = VBM.D.players.length + 1;
+            VBM.D.players.push({
+              id, name, number: Number(body.querySelector('#np_num').value) || id,
+              position: pos, grade: body.querySelector('#np_grade').value,
+              student_id: body.querySelector('#np_sid').value || '20260000',
+              height: Number(body.querySelector('#np_h').value) || 0,
+              weight: Number(body.querySelector('#np_w').value) || 0,
+              hand: body.querySelector('#np_hand').value,
+              attendance_rate: 100, training_completion_rate: 0,
+              pass_rate: pos === '自由人' ? 70 : 58, spike_success_rate: 45, serve_score_rate: 16, block_success_rate: 15,
+              weekly: { pass: [60, 60, 60, 60], spike: [45, 45, 45, 45] }
+            });
+            VBM.toast('球员 ' + name + ' 已加入球队', 'ok');
+            close(); VBM.go('players');
+          }
+        }
+      ]
+    });
+  }
+
+  /* ---------------- 详情 ---------------- */
+  VBM.pages.playerDetail = function (c, params) {
+    const p = VBM.q.player(params.id);
+    if (!p) { c.innerHTML = '<div class="empty">球员不存在</div>'; return; }
+    VBM.state.currentPlayerId = p.id;
+    const attRecs = VBM.q.recsOfPlayer(p.id).slice(-8).reverse();
+    const color = VBM.D.POS_COLOR[p.position];
+
+    c.innerHTML = `
+      <span class="back-link" data-back>${icon('chevron-left')} 返回球员管理</span>
+      <div class="detail-hero">
+        <span class="dh-back" data-back>${icon('chevron-left')}</span>
+        <div class="dh-avatar">${esc(p.name[0])}</div>
+        <div style="flex:1">
+          <h2>${p.name} <span style="font-size:14px;font-weight:500;color:#E3CDEC">#${p.number}</span></h2>
+          <div class="dh-tags"><span class="dh-tag">${p.position}</span><span class="dh-tag">${p.grade}</span><span class="dh-tag">球衣 ${p.number} 号</span></div>
+        </div>
+        <div style="text-align:right"><div style="font-size:30px;font-weight:800">${p.attendance_rate}%</div><div style="font-size:12px;color:#E3CDEC">本月出勤率</div></div>
+      </div>
+
+      <div class="grid g-3">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">基础信息</div>
+          <div class="desc-list">
+            <div class="dl-item"><dt>身高</dt><dd>${p.height} cm</dd></div>
+            <div class="dl-item"><dt>体重</dt><dd>${p.weight} kg</dd></div>
+            <div class="dl-item"><dt>惯用手</dt><dd>${p.hand}</dd></div>
+            <div class="dl-item"><dt>场上位置</dt><dd>${p.position}</dd></div>
+            <div class="dl-item"><dt>球衣号码</dt><dd>${p.number} 号</dd></div>
+            <div class="dl-item"><dt>学号</dt><dd>${p.student_id}</dd></div>
+          </div>
+        </div>
+        <div class="card g-2" style="grid-column:span 2">
+          ${[
+            ['训练次数', VBM.q.recsOfPlayer(p.id).length + ' 次'],
+            ['出勤率', p.attendance_rate + '%'],
+            ['训练完成率', p.training_completion_rate + '%'],
+            ['一传到位率', p.pass_rate + '%'],
+            ['扣球成功率', p.spike_success_rate + '%'],
+            ['发球得分率', p.serve_score_rate + '%'],
+            ['拦网成功率', p.block_success_rate + '%'],
+            ['综合状态', p.attendance_rate >= 90 ? '出勤稳定' : '出勤需关注']
+          ].map(x => `<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px">
+            <div style="font-size:12px;color:var(--ink-3)">${x[0]}</div>
+            <div style="font-size:20px;font-weight:800;margin-top:2px;color:${color}">${x[1]}</div></div>`).join('')}
+        </div>
+      </div>
+
+      <div class="grid g-2 section-gap">
+        <div class="card">
+          <div class="card-head"><div class="card-title">最近训练表现 <span class="ct-tag">近 4 周</span></div></div>
+          <div id="trend"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">出勤记录</div></div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>日期</th><th>训练内容</th><th>状态</th><th>备注</th></tr></thead>
+              <tbody>${attRecs.map(a => {
+                const tr = VBM.q.training(a.training_id);
+                return `<tr><td style="white-space:nowrap">${tr.date}</td><td>${tr.title}</td><td>${VBM.statusTag(a.status)}</td><td style="color:var(--ink-3);font-size:12.5px">${a.remark || '—'}</td></tr>`;
+              }).join('')}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+
+    c.querySelector('#trend').appendChild(VBM.charts.multiLine([
+      { name: '一传到位率', data: p.weekly.pass, color: '#722F86' },
+      { name: '扣球成功率', data: p.weekly.spike, color: '#D9922B' }
+    ], ['周1', '周2', '周3', '周4'], { min: 30, max: 75 }));
+
+    c.querySelectorAll('[data-back]').forEach(b => b.onclick = () => VBM.go('players'));
+  };
+})();
+
+/* ===== js/pages/training.js ===== */
+/* 训练计划：周视图 / 月视图 / 详情 / 创建 / 编辑 */
+(function () {
+  const VBM = window.VBM;
+  const { icon, esc } = VBM;
+  VBM.pages = VBM.pages || {};
+
+  VBM.pages.training = function (c, params) {
+    const D = VBM.D;
+    c.innerHTML = `
+      <div class="page-head">
+        <div><div class="page-title">训练计划</div>
+          <div class="page-desc">训练流程：创建训练 → 发布 → 球员查看 → 训练签到 → 记录表现 → 形成训练数据</div></div>
+        <div class="head-actions"><button class="btn btn-primary" id="newTr">${icon('plus')} 新建训练</button></div>
+      </div>
+      <div class="seg" id="viewSeg" style="margin-bottom:16px">
+        <button data-v="week" class="active">周视图</button><button data-v="month">月视图</button>
+      </div>
+      <div id="viewBody"></div>`;
+
+    const body = c.querySelector('#viewBody');
+    let view = 'week';
+    c.querySelectorAll('#viewSeg button').forEach(b => b.onclick = () => {
+      view = b.getAttribute('data-v');
+      c.querySelectorAll('#viewSeg button').forEach(x => x.classList.toggle('active', x === b));
+      render();
+    });
+    c.querySelector('#newTr').onclick = () => VBM.go('training/new');
+
+    function render() {
+      if (view === 'week') renderWeek(); else renderMonth();
+    }
+
+    function renderWeek() {
+      // 本周训练（以今天所在周的周一为起点）
+      const now = new Date(D.today + 'T00:00:00');
+      const monday = VBM.util.addDays(now, -((now.getDay() + 6) % 7));
+      const cards = [];
+      for (let i = 0; i < 7; i++) {
+        const d = VBM.util.addDays(monday, i);
+        const tr = D.trainings.find(t => t.date === VBM.util.fmt(d));
+        if (tr) cards.push({ d, tr });
+      }
+      body.innerHTML = `
+        <div class="card">
+          <div class="card-head"><div class="card-title">本周训练计划</div>
+            <span class="ct-tag" style="font-size:12px;color:var(--ink-3)">${VBM.util.fmt(monday)} 起</span></div>
+          <div class="week-grid">
+            ${cards.map(({ d, tr }) => {
+              const isToday = tr.date === D.today;
+              return `<div class="plan-card" data-id="${tr.id}">
+                <div class="pc-day"><span>${VBM.util.WEEK[d.getDay()]}</span>${isToday ? '<span class="tag tag-red" style="font-size:10px">今天</span>' : ''}</div>
+                <div class="pc-body">
+                  <div class="pc-theme">${tr.title}</div>
+                  <div class="pc-meta">${icon('clock')} ${tr.start_time}—${tr.end_time}</div>
+                  <div class="pc-meta">${icon('pin')} ${tr.location}</div>
+                  <div class="pc-meta">${icon('users')} 实到 ${tr.actual_count}/${tr.expected_count}</div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      body.querySelectorAll('.plan-card').forEach(p => p.onclick = () => VBM.go('training/detail?id=' + p.getAttribute('data-id')));
+    }
+
+    function renderMonth() {
+      const now = new Date(D.today + 'T00:00:00');
+      const first = new Date(now.getFullYear(), now.getMonth(), 1);
+      const start = VBM.util.addDays(first, -first.getDay());
+      const cells = [];
+      for (let i = 0; i < 42; i++) {
+        const d = VBM.util.addDays(start, i);
+        const tr = D.trainings.find(t => t.date === VBM.util.fmt(d));
+        cells.push({ d, tr, out: d.getMonth() !== now.getMonth() });
+      }
+      body.innerHTML = `<div class="card">
+        <div class="card-head"><div class="card-title">${now.getMonth() + 1} 月训练日历</div></div>
+        <div class="calendar">
+          ${['日', '一', '二', '三', '四', '五', '六'].map(w => `<div class="cal-head">周${w}</div>`).join('')}
+          ${cells.map(x => `<div class="cal-cell ${x.out ? 'out' : ''} ${x.d.getTime() === new Date(D.today + 'T00:00:00').getTime() ? 'today' : ''}">
+            <div class="cal-num">${x.d.getDate()}</div>
+            ${x.tr ? `<div class="cal-ev" data-id="${x.tr.id}">${x.tr.start_time} ${x.tr.title}</div>` : ''}
+          </div>`).join('')}
+        </div>
+      </div>`;
+      body.querySelectorAll('.cal-ev').forEach(e => e.onclick = () => VBM.go('training/detail?id=' + e.getAttribute('data-id')));
+    }
+    render();
+    if (VBM.state.role === 'player') VBM.playerize(c);
+  };
+
+  /* ---------------- 训练详情 ---------------- */
+  VBM.pages.trainingDetail = function (c, params) {
+    const t = VBM.q.training(params.id);
+    if (!t) { c.innerHTML = '<div class="empty">训练不存在</div>'; return; }
+    c.innerHTML = `
+      <span class="back-link" data-back>${icon('chevron-left')} 返回训练计划</span>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title" style="font-size:18px">${t.title} <span class="tag tag-purple">${t.weekday}</span></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm btn-soft" data-go="attendance/checkin?id=${t.id}">${icon('clipboard')} 签到</button>
+            <button class="btn btn-sm btn-ghost" id="edit">${icon('edit')} 修改</button>
+          </div>
+        </div>
+        <div class="grid g-3">
+          <div class="dl-item" style="border:1px solid var(--line);border-radius:10px;padding:13px"><dt style="color:var(--ink-3);font-size:12px">时间</dt><dd style="font-weight:700;margin-top:3px">${t.date} ${t.start_time}—${t.end_time}</dd></div>
+          <div class="dl-item" style="border:1px solid var(--line);border-radius:10px;padding:13px"><dt style="color:var(--ink-3);font-size:12px">地点</dt><dd style="font-weight:700;margin-top:3px">${t.location}</dd></div>
+          <div class="dl-item" style="border:1px solid var(--line);border-radius:10px;padding:13px"><dt style="color:var(--ink-3);font-size:12px">人数</dt><dd style="font-weight:700;margin-top:3px">预计 ${t.expected_count} / 实际 ${t.actual_count}</dd></div>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px">
+          <div><h4 style="font-size:13.5px;margin-bottom:5px">训练目标</h4><p style="color:var(--ink-2);font-size:13.5px">${t.goal}</p></div>
+          <div><h4 style="font-size:13.5px;margin-bottom:5px">训练内容</h4><p style="color:var(--ink-2);font-size:13.5px">${t.content}（共 ${t.drills.length} 个项目）</p></div>
+          <div><h4 style="font-size:13.5px;margin-bottom:5px">完成度</h4><div class="progress" style="max-width:420px"><span style="width:${t.completion_rate}%"></span></div><div style="font-size:12.5px;color:var(--ink-3);margin-top:5px">${t.completion_rate}%</div></div>
+          <div><h4 style="font-size:13.5px;margin-bottom:5px">教练备注</h4><p style="color:var(--ink-2);font-size:13.5px">${t.remark || '暂无备注'}</p></div>
+        </div>
+      </div>`;
+    c.querySelector('[data-back]').onclick = () => VBM.go('training');
+    c.querySelector('[data-go]').onclick = e => VBM.go(e.currentTarget.getAttribute('data-go'));
+    c.querySelector('#edit').onclick = () => trainingForm(t);
+  };
+
+  /* ---------------- 创建 / 编辑表单 ---------------- */
+  function trainingForm(existing) {
+    const t = existing || {};
+    VBM.modal({
+      title: existing ? '修改训练' : '创建训练', size: 'lg',
+      body: `<div class="form-grid">
+        <div class="form-field"><label>训练日期 <span class="req">*</span></label><input class="input" type="date" id="tf_date" value="${t.date || VBM.D.today}"></div>
+        <div class="form-field"><label>训练时间</label>
+          <div style="display:flex;gap:8px"><input class="input" type="time" id="tf_st" value="${t.start_time || '19:00'}"><input class="input" type="time" id="tf_et" value="${t.end_time || '21:00'}"></div></div>
+        <div class="form-field full"><label>训练地点</label><input class="input" id="tf_loc" value="${t.location || '南京大学体育馆'}"></div>
+        <div class="form-field"><label>训练主题 <span class="req">*</span></label><input class="input" id="tf_title" value="${t.title || ''}" placeholder="如 接发球专项"></div>
+        <div class="form-field"><label>预计时长 (min)</label><input class="input" type="number" id="tf_dur" value="120"></div>
+        <div class="form-field full"><label>训练目标</label><textarea class="textarea" id="tf_goal">${t.goal || ''}</textarea></div>
+        <div class="form-field full"><label>训练项目（逗号分隔）</label><input class="input" id="tf_items" value="${t.content || ''}" placeholder="接发球、防守、扣球"></div>
+        <div class="form-field"><label>参与球员</label>
+          <select class="select-input" id="tf_who"><option value="all">全体球员（18人）</option>${VBM.D.POSITIONS.map(p => `仅 ${p}`).map(o => `<option>${o}</option>`).join('')}</select></div>
+        <div class="form-field"><label>预计人数</label><input class="input" type="number" id="tf_exp" value="18"></div>
+        <div class="form-field full"><label>教练备注</label><textarea class="textarea" id="tf_remark">${t.remark || ''}</textarea></div>
+      </div>`,
+      buttons: [
+        { text: '取消', onClick: ({ close }) => close() },
+        {
+          text: existing ? '保存修改' : '创建训练', primary: true,
+          onClick: ({ close, body }) => {
+            const title = body.querySelector('#tf_title').value.trim();
+            if (!title) { VBM.toast('请填写训练主题', 'err'); return; }
+            const v = id => body.querySelector(id).value;
+            const items = v('#tf_items').split(/[、,，]/).map(s => s.trim()).filter(Boolean);
+            if (existing) {
+              Object.assign(existing, {
+                date: v('#tf_date'), start_time: v('#tf_st'), end_time: v('#tf_et'),
+                location: v('#tf_loc'), title, goal: v('#tf_goal'), content: items.join('、'),
+                drills: items, expected_count: Number(v('#tf_exp')), remark: v('#tf_remark')
+              });
+              VBM.toast('训练计划已更新', 'ok');
+            } else {
+              const id = 'T' + Date.now();
+              const d = new Date(v('#tf_date') + 'T00:00:00');
+              const tr = {
+                id, date: v('#tf_date'), weekday: VBM.util.WEEK[d.getDay()],
+                start_time: v('#tf_st'), end_time: v('#tf_et'), location: v('#tf_loc'),
+                title, goal: v('#tf_goal'), content: items.join('、'), drills: items,
+                expected_count: Number(v('#tf_exp')), actual_count: 0, completion_rate: 0,
+                remark: v('#tf_remark'), isNew: true
+              };
+              VBM.D.trainings.push(tr);
+              // 自动生成初始出勤记录（默认未签到）
+              VBM.D.players.forEach(p => VBM.D.attendance.push({
+                id: 'A' + Date.now() + p.id, training_id: id, player_id: p.id, status: 'absent', remark: '尚未签到'
+              }));
+              VBM.toast('训练已创建并发布，球员可查看并签到', 'ok');
+            }
+            close(); VBM.go('training');
+          }
+        }
+      ]
+    });
+  }
+  VBM.trainingForm = trainingForm;
+
+  VBM.pages.createTraining = function (c) {
+    c.innerHTML = '<div></div>';
+    // 直接以弹窗形式承载创建表单
+    trainingForm(null);
+    setTimeout(() => VBM.go('training'), 0);
+  };
+})();
+
+/* ===== js/pages/attendance.js ===== */
+/* 出勤管理 + 签到详情 */
+(function () {
+  const VBM = window.VBM;
+  const { icon } = VBM;
+  VBM.pages = VBM.pages || {};
+
+  VBM.pages.attendance = function (c) {
+    const D = VBM.D;
+    const list = [...D.trainings].reverse();
+    const last = list[0];
+    c.innerHTML = `
+      <div class="page-head">
+        <div><div class="page-title">出勤管理</div>
+          <div class="page-desc">所有出勤率均由签到记录实时统计，系统仅做客观数据提醒</div></div>
+      </div>
+      <div class="grid g-5" style="margin-bottom:18px">
+        ${[
+          ['本月出勤率', VBM.q.teamSummary().attendance + '%', 'trend', 'var(--purple)'],
+          ['应到人次', D.trainings.length * 18, 'users', '#3E79C9'],
+          ['实到人次', D.attendance.filter(a => VBM.q.onTime(a.status)).length, 'check', 'var(--green)'],
+          ['缺勤人次', D.attendance.filter(a => a.status === 'absent').length, 'alert', 'var(--red)'],
+          ['请假人次', D.attendance.filter(a => a.status === 'leave').length, 'clock', 'var(--amber)']
+        ].map(s => `<div class="stat-card"><div class="sc-top"><span class="sc-label">${s[0]}</span>
+          <span class="sc-ico" style="background:var(--purple-soft);color:${s[3]}">${icon(s[2])}</span></div>
+          <div class="sc-value">${s[1]}</div></div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">训练记录表</div></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>日期</th><th>训练内容</th><th class="num">应到</th><th class="num">实到</th><th class="num">请假</th><th class="num">缺勤</th><th class="num">出勤率</th></tr></thead>
+            <tbody>${list.map(t => `<tr data-id="${t.id}">
+              <td style="white-space:nowrap">${t.date} <span style="color:var(--ink-3);font-size:12px">${t.weekday}</span></td>
+              <td>${t.title}</td>
+              <td class="num">${t.expected_count}</td>
+              <td class="num">${t.actual_count}</td>
+              <td class="num">${t.leave_count}</td>
+              <td class="num">${t.absent_count}</td>
+              <td class="num"><span class="att-pill" style="color:${t.actual_count / t.expected_count >= .9 ? 'var(--green)' : 'var(--amber)'}">${Math.round(t.actual_count / t.expected_count * 100)}%</span></td>
+            </tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+    c.querySelectorAll('tr[data-id]').forEach(r => r.onclick = () => VBM.go('attendance/checkin?id=' + r.getAttribute('data-id')));
+    if (VBM.state.role === 'player') VBM.playerize(c);
+  };
+
+  /* ---------------- 签到详情 ---------------- */
+  VBM.pages.checkin = function (c, params) {
+    const t = VBM.q.training(params.id);
+    if (!t) { c.innerHTML = '<div class="empty">训练不存在</div>'; return; }
+    let recs = VBM.q.recsOfTraining(t.id);
+
+    c.innerHTML = `
+      <span class="back-link" data-back>${icon('chevron-left')} 返回出勤管理</span>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title" style="font-size:18px">签到详情 · ${t.title}
+            <span class="ct-tag">${t.date} ${t.start_time}</span></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm btn-soft" id="allPresent">全部签到</button>
+            <button class="btn btn-sm btn-ghost" id="batch">批量修改状态</button>
+          </div>
+        </div>
+        <div id="gridBox" class="checkin-grid"></div>
+        <div id="anomaly" style="margin-top:18px"></div>
+        <div style="margin-top:18px;text-align:right"><button class="btn btn-primary" id="save">${icon('save')} 保存记录</button></div>
+      </div>`;
+
+    const box = c.querySelector('#gridBox');
+    function render() {
+      box.innerHTML = recs.map(r => {
+        const p = VBM.q.player(r.player_id);
+        return `<div class="checkin-item">
+          ${VBM.avatar(p)}
+          <div class="ci-name"><strong>${p.name}</strong><small>${p.position} · #${p.number}</small></div>
+          <select class="status-select s-${r.status}" data-pid="${p.id}">
+            ${['present', 'leave', 'absent', 'late'].map(s => `<option value="${s}" ${r.status === s ? 'selected' : ''}>${VBM.ATT_STATUS[s].text}</option>`).join('')}
+          </select>
+        </div>`;
+      }).join('');
+      box.querySelectorAll('select').forEach(sel => sel.onchange = () => {
+        const r = recs.find(x => x.player_id === Number(sel.getAttribute('data-pid')));
+        r.status = sel.value;
+        sel.className = 'status-select s-' + sel.value;
+      });
+    }
+    render();
+
+    c.querySelector('#allPresent').onclick = () => { recs.forEach(r => r.status = 'present'); render(); VBM.toast('已将全部球员设为出勤'); };
+    c.querySelector('#batch').onclick = () => {
+      VBM.modal({
+        title: '批量修改状态',
+        body: `<p style="font-size:13px;margin-bottom:12px">将当前非出勤球员统一修改为：</p>
+          <select class="select-input" id="bs">${['present', 'late', 'leave', 'absent'].map(s => `<option value="${s}">${VBM.ATT_STATUS[s].text}</option>`).join('')}</select>`,
+        buttons: [
+          { text: '取消', onClick: ({ close }) => close() },
+          { text: '应用', primary: true, onClick: ({ close, body }) => {
+            const v = body.querySelector('#bs').value;
+            recs.forEach(r => { if (!VBM.q.onTime(r.status)) r.status = v; });
+            render(); close();
+          } }
+        ]
+      });
+    };
+    c.querySelector('#save').onclick = () => {
+      // 回写训练汇总（实际人数由出勤记录驱动）
+      t.actual_count = recs.filter(r => VBM.q.onTime(r.status)).length;
+      t.leave_count = recs.filter(r => r.status === 'leave').length;
+      t.absent_count = recs.filter(r => r.status === 'absent').length;
+      t.late_count = recs.filter(r => r.status === 'late').length;
+      // 同步球员月度出勤率
+      VBM.D.players.forEach(p => {
+        const rs = VBM.q.recsOfPlayer(p.id);
+        p.attendance_rate = Math.round(rs.filter(a => VBM.q.onTime(a.status)).length / rs.length * 100);
+      });
+      renderAnomaly();
+      VBM.toast('签到记录已保存，出勤数据已更新', 'ok');
+    };
+    c.querySelector('[data-back]').onclick = () => VBM.go('attendance');
+
+    function renderAnomaly() {
+      const anomalies = VBM.q.attendanceAnomalies();
+      const box2 = c.querySelector('#anomaly');
+      if (!anomalies.length) { box2.innerHTML = '<div class="lineup-alert la-ok">' + icon('check') + '近 4 次训练无出勤异常。</div>'; return; }
+      box2.innerHTML = anomalies.map(a => `<div class="lineup-alert la-info">${icon('info')}
+        <div><strong>${a.player.name}</strong> 近 ${a.total} 次训练中有 ${a.bad} 次非出勤（请假/缺勤/迟到），建议关注。<br>
+        <span style="font-size:11.5px;opacity:.8">说明：系统仅基于客观出勤记录提示，不做球员能力、健康或人格判断。</span></div></div>`).join('');
+    }
+    renderAnomaly();
+  };
+})();
+
+/* ===== js/pages/lineup.js ===== */
+/* 阵容配置 —— 排球场示意 + 点击替换 + 拖拽 + 校验 + 信息辅助 */
+(function () {
+  const VBM = window.VBM;
+  const { icon, esc } = VBM;
+  VBM.pages = VBM.pages || {};
+  const NS = 'http://www.w3.org/2000/svg';
+
+  VBM.pages.lineup = function (c, params) {
+    const matchId = params.matchId || 'M6';
+    const match = VBM.q.match(matchId);
+    const D = VBM.D;
+    let L = D.lineups[matchId];
+    let variants = [{ name: L.name, data: clone(L.map), saved: L.saved }];
+    let vi = 0;
+    let selectedSlot = null;
+
+    function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+    c.innerHTML = `
+      <span class="back-link" data-back>${icon('chevron-left')} 返回比赛管理</span>
+      <div class="page-head">
+        <div><div class="page-title">比赛阵容</div>
+          <div class="page-desc">比赛名称：2026 高校排球比赛 · 南京大学 vs ${match.opponent} · ${match.date}</div></div>
+        <div class="head-actions">
+          <button class="btn btn-ghost" id="altLineup">${icon('plus')} 创建备用阵容</button>
+          <button class="btn btn-primary" id="saveLineup">${icon('save')} 保存阵容</button>
+        </div>
+      </div>
+      <div class="seg" id="varSeg" style="margin-bottom:16px"></div>
+      <div id="alertBox" style="margin-bottom:14px"></div>
+      <div class="lineup-wrap">
+        <div class="court-box" id="courtBox"></div>
+        <div class="bench-card card" id="benchCard">
+          <div class="card-title">替补 / 可用球员</div>
+          <div class="info-tip">${icon('info')} 拖拽球员到场上位置，或点击场上圆圈换人。系统仅提供客观出勤/技术数据，<strong>不自动判定首发</strong>，最终阵容由教练/队长决定。</div>
+          <div id="benchList"></div>
+        </div>
+      </div>`;
+
+    /* ---------- 球场 SVG ---------- */
+    const courtBox = c.querySelector('#courtBox');
+    function buildCourt() {
+      const W = 480, H = 520;
+      const svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.classList.add('court');
+      // 场地
+      svg.appendChild(rect(24, 24, W - 48, H - 48, 24, '#FFF', '#B98FCB', 2.5));
+      // 中线
+      svg.appendChild(line(W / 2, 24, W / 2, H - 24, '#B98FCB', 2));
+      // 网（中线加粗虚线带）
+      svg.appendChild(line(24, H / 2, W - 24, H / 2, '#722F86', 3.5, '7 5'));
+      svg.appendChild(text('三米线', 40, 152, 10, '#B596C7'));
+      svg.appendChild(line(24, 142, W - 24, 142, '#D6B9E6', 1.5));
+      svg.appendChild(line(24, H - 142, W - 24, H - 142, '#D6B9E6', 1.5));
+      svg.appendChild(text('球网', W - 48, H / 2 - 8, 11, '#722F86', 'end'));
+
+      // 位置槽
+      D.slotDef.forEach(s => {
+        const cur = variants[vi].data[s.key];
+        const p = cur ? VBM.q.player(cur.player_id) : null;
+        const g = document.createElementNS(NS, 'g');
+        g.setAttribute('class', 'slot-node' + (p ? '' : 'empty'));
+        g.setAttribute('data-slot', s.key);
+        g.setAttribute('transform', `translate(${s.x},${s.y})`);
+        g.appendChild(circle(0, 0, 33, '', 'slot-circle'));
+        const pt = document.createElementNS(NS, 'text');
+        pt.setAttribute('y', -40); pt.setAttribute('text-anchor', 'middle');
+        pt.setAttribute('class', 'slot-pos'); pt.textContent = s.pos;
+        g.appendChild(pt);
+        if (p) {
+          const nt = document.createElementNS(NS, 'text');
+          nt.setAttribute('y', 4); nt.setAttribute('text-anchor', 'middle');
+          nt.setAttribute('class', 'slot-name'); nt.textContent = p.name.length > 3 ? p.name.slice(0, 3) : p.name;
+          g.appendChild(nt);
+          // 号码小徽
+          g.appendChild(circle(24, -24, 10, VBM.D.POS_COLOR[p.position], ''));
+          const ntt = document.createElementNS(NS, 'text');
+          ntt.setAttribute('x', 24); ntt.setAttribute('y', -20); ntt.setAttribute('text-anchor', 'middle');
+          ntt.setAttribute('class', 'slot-num'); ntt.textContent = p.number;
+          g.appendChild(ntt);
+        } else {
+          const et = document.createElementNS(NS, 'text');
+          et.setAttribute('y', 4); et.setAttribute('text-anchor', 'middle');
+          et.setAttribute('class', 'slot-pos'); et.textContent = '待配置';
+          g.appendChild(et);
+        }
+        g.addEventListener('click', () => openPicker(s.key));
+        // 拖拽接收
+        g.addEventListener('dragover', e => { e.preventDefault(); g.classList.add('drag-over'); });
+        g.addEventListener('dragleave', () => g.classList.remove('drag-over'));
+        g.addEventListener('drop', e => {
+          e.preventDefault(); g.classList.remove('drag-over');
+          assignPlayer(s.key, Number(e.dataTransfer.getData('pid')));
+        });
+        svg.appendChild(g);
+      });
+      courtBox.innerHTML = '';
+      courtBox.appendChild(svg);
+    }
+
+    /* ---------- 替补列表 ---------- */
+    function buildBench() {
+      const onCourt = Object.values(variants[vi].data).filter(Boolean).map(x => x.player_id);
+      const listBox = c.querySelector('#benchList');
+      listBox.innerHTML = VBM.D.players.map(p => {
+        const active = onCourt.includes(p.id);
+        return `<div class="player-chip ${active ? '' : ''}" draggable="${active ? 'false' : 'true'}" data-pid="${p.id}" style="${active ? 'opacity:.4;cursor:not-allowed' : ''}">
+          <span class="pc-num">${p.number}</span>
+          <div class="pc-info"><strong>${p.name}</strong><small>${p.position} · 出勤${p.attendance_rate}% · 扣球${p.spike_success_rate}%</small></div>
+        </div>`;
+      }).join('');
+      listBox.querySelectorAll('[data-pid]').forEach(chip => {
+        chip.addEventListener('dragstart', e => {
+          chip.classList.add('dragging');
+          e.dataTransfer.setData('pid', chip.getAttribute('data-pid'));
+        });
+        chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+      });
+    }
+
+    /* ---------- 点击换人弹层（含客观信息辅助） ---------- */
+    function openPicker(slotKey) {
+      const needPos = L.slotPos[slotKey];
+      const onCourt = Object.values(variants[vi].data).filter(Boolean).map(x => x.player_id);
+      const candidates = VBM.D.players.filter(p => !onCourt.includes(p.id));
+      VBM.modal({
+        title: `替换 · ${needPos}（${slotLabel(slotKey)}）`, size: 'lg',
+        body: `<div class="info-tip" style="margin-bottom:12px">${icon('target')} 建议从 <strong>${needPos}</strong> 中选择；下方按位置分组，仅展示客观数据供参考。</div>
+          <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>球员</th><th>位置</th><th class="num">近4周出勤率</th><th class="num">扣球成功率</th><th class="num">一传到位率</th><th></th></tr></thead>
+            <tbody>${candidates.map(p => `<tr>
+              <td><div class="cell-player">${VBM.avatar(p)}<strong>${p.name}</strong></div></td>
+              <td><span class="tag tag-purple">${p.position}</span></td>
+              <td class="num">${p.attendance_rate}%</td>
+              <td class="num">${p.spike_success_rate}%</td>
+              <td class="num">${p.pass_rate}%</td>
+              <td><button class="btn btn-sm btn-primary" data-pick="${p.id}">选用</button></td>
+            </tr>`).join('')}</tbody></table></div>`,
+        onMount: body => body.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => {
+          assignPlayer(slotKey, Number(b.getAttribute('data-pick')));
+          document.querySelector('.modal-mask')?.remove();
+        })
+      });
+    }
+    function slotLabel(k) { return { oh1: '主攻一', oh2: '主攻二', mb1: '副攻一', mb2: '副攻二', set: '二传', opp: '接应', lib: '自由人' }[k]; }
+
+    function assignPlayer(slotKey, pid) {
+      // 若该球员已在其他槽位，先交换/清空
+      for (const k in variants[vi].data) {
+        const cell = variants[vi].data[k];
+        if (cell && cell.player_id === pid && k !== slotKey) variants[vi].data[k] = variants[vi].data[slotKey] || null;
+      }
+      variants[vi].data[slotKey] = { player_id: pid, position: L.slotPos[slotKey], starting: 1 };
+      variants[vi].saved = false;
+      refresh();
+      VBM.toast('已调整位置，记得保存阵容');
+    }
+
+    /* ---------- 校验 ---------- */
+    function validate() {
+      const data = variants[vi].data;
+      const errs = [], infos = [];
+      const placed = Object.values(data).filter(Boolean).map(x => x.player_id);
+      // 空槽
+      L.slots.forEach(k => { if (!data[k]) errs.push(`位置「${L.slotPos[k]} · ${slotLabel(k)}」尚未配置球员。`); });
+      // 重复
+      const dup = placed.filter((id, i) => placed.indexOf(id) !== i);
+      if (dup.length) errs.push('同一球员不能同时出现在多个位置。');
+      // 位置覆盖
+      const covered = {};
+      Object.entries(data).forEach(([k, v]) => { if (v) covered[VBM.q.player(v.player_id).position] = true; });
+      ['主攻', '副攻', '二传', '接应', '自由人'].forEach(pos => {
+        if (!covered[pos]) errs.push(`当前阵容缺少${pos}，请补充后再保存。`);
+      });
+      return { errs, infos };
+    }
+    function renderAlert(showAll) {
+      const { errs } = validate();
+      const box = c.querySelector('#alertBox');
+      if (!errs.length) {
+        box.innerHTML = `<div class="lineup-alert la-ok">${icon('check')} 阵容结构完整（主攻/副攻/二传/接应/自由人齐备，无重复），可保存。最终是否首发仍由教练/队长确认。</div>`;
+      } else if (showAll) {
+        box.innerHTML = errs.map(e => `<div class="lineup-alert la-error">${icon('alert')}<div>${e}</div></div>`).join('');
+      } else {
+        box.innerHTML = `<div class="lineup-alert la-info">${icon('info')}<div>阵容配置中，保存时将自动校验结构（共 ${errs.length} 项待处理）。</div></div>`;
+      }
+    }
+
+    /* ---------- 变体（备用阵容） ---------- */
+    function buildVarSeg() {
+      const seg = c.querySelector('#varSeg');
+      seg.innerHTML = variants.map((v, i) => `<button data-i="${i}" class="${i === vi ? 'active' : ''}">${v.name}${v.saved ? '' : ' ●'}</button>`).join('');
+      seg.querySelectorAll('button').forEach(b => b.onclick = () => { vi = Number(b.getAttribute('data-i')); refresh(); });
+    }
+    c.querySelector('#altLineup').onclick = () => {
+      const data = {};
+      L.slots.forEach(k => data[k] = null);
+      variants.push({ name: '备用阵容 ' + String.fromCharCode(66 + variants.length - 1), data, saved: false });
+      vi = variants.length - 1;
+      refresh();
+      VBM.toast('已创建空白备用阵容');
+    };
+
+    c.querySelector('#saveLineup').onclick = () => {
+      const { errs } = validate();
+      renderAlert(true);
+      if (errs.length) { VBM.toast('阵容存在错误，无法保存', 'err'); return; }
+      // 写回数据层
+      L.map = clone(variants[vi].data);
+      const onCourt = Object.values(L.map).map(x => x.player_id);
+      L.bench = VBM.D.players.filter(p => !onCourt.includes(p.id)).map(p => p.id);
+      L.saved = true; L.name = variants[vi].name;
+      variants[vi].saved = true;
+      VBM.toast('阵容已保存并关联本场比赛', 'ok');
+      refresh();
+    };
+
+    function refresh() { buildVarSeg(); buildCourt(); buildBench(); renderAlert(false); }
+    refresh();
+    c.querySelector('[data-back]').onclick = () => VBM.go('matches');
+    if (VBM.state.role === 'player') VBM.playerize(c);
+  };
+
+  /* SVG 小工具 */
+  function rect(x, y, w, h, r, fill, stroke, sw) {
+    const e = document.createElementNS(NS, 'rect');
+    Object.entries({ x, y, width: w, height: h, rx: r, fill, stroke, 'stroke-width': sw }).forEach(([k, v]) => e.setAttribute(k, v));
+    return e;
+  }
+  function line(x1, y1, x2, y2, stroke, sw, dash) {
+    const e = document.createElementNS(NS, 'line');
+    Object.entries({ x1, y1, x2, y2, stroke, 'stroke-width': sw }).forEach(([k, v]) => e.setAttribute(k, v));
+    if (dash) e.setAttribute('stroke-dasharray', dash);
+    return e;
+  }
+  function circle(cx, cy, r, fill, cls) {
+    const e = document.createElementNS(NS, 'circle');
+    e.setAttribute('cx', cx); e.setAttribute('cy', cy); e.setAttribute('r', r);
+    if (fill) e.setAttribute('fill', fill);
+    if (cls) e.setAttribute('class', cls);
+    return e;
+  }
+  function text(t, x, y, size, fill, anchor) {
+    const e = document.createElementNS(NS, 'text');
+    e.setAttribute('x', x); e.setAttribute('y', y); e.setAttribute('font-size', size);
+    e.setAttribute('fill', fill); if (anchor) e.setAttribute('text-anchor', anchor);
+    e.textContent = t; return e;
+  }
+})();
+
+/* ===== js/pages/matches.js ===== */
+/* 比赛管理 + 比赛详情（阵容 / 数据记录 / 复盘） */
+(function () {
+  const VBM = window.VBM;
+  const { icon } = VBM;
+  VBM.pages = VBM.pages || {};
+
+  VBM.pages.matches = function (c) {
+    const D = VBM.D;
+    const upcoming = D.matches.filter(m => m.status === 'upcoming');
+    const history = D.matches.filter(m => m.status === 'finished');
+
+    c.innerHTML = `
+      <div class="page-head">
+        <div><div class="page-title">比赛管理</div>
+          <div class="page-desc">比赛流程：创建比赛 → 配置阵容 → 确认首发 → 记录数据 → 复盘 → 数据汇入球队分析</div></div>
+        <div class="head-actions"><button class="btn btn-primary" id="addMatch">${icon('plus')} 新建比赛</button></div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-title" style="margin-bottom:12px">即将进行</div>
+        <div style="display:flex;flex-direction:column;gap:11px">
+          ${upcoming.map(m => matchCard(m)).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">历史比赛 · 近一月 ${history.length} 场（${history.filter(m => m.result === 'W').length}胜${history.filter(m => m.result === 'L').length}负）</div>
+        <div style="display:flex;flex-direction:column;gap:11px">
+          ${history.map(m => matchCard(m)).join('')}
+        </div>
+      </div>`;
+
+    c.querySelector('#addMatch').onclick = addMatchForm;
+    c.querySelectorAll('[data-id]').forEach(card2 => card2.onclick = () => VBM.go('match/' + card2.getAttribute('data-id')));
+    if (VBM.state.role === 'player') VBM.playerize(c);
+  };
+
+  function matchCard(m) {
+    const won = m.result === 'W';
+    return `<div class="match-card" data-id="${m.id}">
+      <span class="tag ${m.status === 'upcoming' ? 'tag-blue' : won ? 'tag-green' : 'tag-red'}">${m.status === 'upcoming' ? '待进行' : won ? '胜' : '负'}</span>
+      <div class="match-teams">
+        <span class="match-team">南京大学</span>
+        <span class="match-vs">VS</span>
+        <span class="match-team" style="color:var(--ink-2)">${m.opponent}</span>
+      </div>
+      ${m.score ? `<span class="match-score">${m.score}</span>` : ''}
+      <div class="match-meta">
+        <span>${icon('calendar')} ${m.date}</span>
+        <span>${icon('pin')} ${m.location}</span>
+      </div>
+    </div>`;
+  }
+
+  function addMatchForm() {
+    VBM.modal({
+      title: '新建比赛',
+      body: `<div class="form-grid">
+        <div class="form-field"><label>对手</label><input class="input" id="mm_opp" placeholder="如 东南大学"></div>
+        <div class="form-field"><label>比赛日期</label><input class="input" type="date" id="mm_date"></div>
+        <div class="form-field full"><label>比赛地点</label><input class="input" id="mm_loc" value="南京大学体育馆"></div>
+      </div>`,
+      buttons: [
+        { text: '取消', onClick: ({ close }) => close() },
+        { text: '创建并去配置阵容', primary: true, onClick: ({ close, body }) => {
+          const opp = body.querySelector('#mm_opp').value.trim();
+          if (!opp) { VBM.toast('请填写对手', 'err'); return; }
+          const id = 'M' + Date.now();
+          const nm = { id, opponent: opp, date: body.querySelector('#mm_date').value, location: body.querySelector('#mm_loc').value, status: 'upcoming', result: null, score: null, stats: null };
+          VBM.D.matches.push(nm);
+          // 初始化空白阵容
+          const slots = VBM.D.slotDef.map(s => s.key);
+          VBM.D.lineups[id] = {
+            id: 'L' + id, match_id: id, name: '首发阵容 A', slots,
+            slotPos: Object.fromEntries(VBM.D.slotDef.map(s => [s.key, s.pos])),
+            map: Object.fromEntries(slots.map(k => [k, null])), bench: VBM.D.players.map(p => p.id), saved: false
+          };
+          close(); VBM.go('lineup?matchId=' + id);
+        } }
+      ]
+    });
+  }
+
+  /* ---------------- 比赛详情 ---------------- */
+  VBM.pages.matchDetail = function (c, params) {
+    const m = VBM.q.match(params.id);
+    if (!m) { c.innerHTML = '<div class="empty">比赛不存在</div>'; return; }
+    const L = VBM.q.lineup(m.id);
+    const finished = m.status === 'finished';
+    const starting = Object.values(L.map).filter(Boolean);
+
+    c.innerHTML = `
+      <span class="back-link" data-back>${icon('chevron-left')} 返回比赛管理</span>
+      <div class="detail-hero">
+        <div style="flex:1">
+          <div style="font-size:12px;color:#E3CDEC">${m.date} · ${m.location}</div>
+          <h2 style="margin-top:3px">南京大学 vs ${m.opponent}</h2>
+          <div class="dh-tags">
+            <span class="dh-tag">${finished ? (m.result === 'W' ? '已获胜 ' + m.score : '已负 ' + m.score) : '待进行'}</span>
+            ${finished ? '<span class="dh-tag">已复盘</span>' : '<span class="dh-tag">阵容' + (L.saved ? '已确认' : '未确认') + '</span>'}
+          </div>
+        </div>
+        ${finished ? `<div style="text-align:center"><div style="font-size:34px;font-weight:800">${m.score}</div></div>` : ''}
+      </div>
+
+      <div class="grid g-2">
+        <div class="card">
+          <div class="card-head"><div class="card-title">比赛阵容</div>
+            <button class="btn btn-sm btn-soft" data-go="lineup?matchId=${m.id}">${icon('grid')} 配置阵容</button></div>
+          <div class="card-title" style="font-size:13px;margin-bottom:8px">首发（${starting.length}）</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+            ${starting.map(x => {
+              const p = VBM.q.player(x.player_id);
+              return `<span class="player-chip" style="cursor:default;padding:7px 11px"><span class="pc-num">${p.number}</span>
+                <div class="pc-info"><strong style="font-size:12.5px">${p.name}</strong><small>${x.position}</small></div></span>`;
+            }).join('') || '<span style="color:var(--ink-3);font-size:13px">尚未配置首发</span>'}
+          </div>
+          <div class="card-title" style="font-size:13px;margin-bottom:8px">替补（${L.bench.length}）</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px">
+            ${L.bench.map(id => { const p = VBM.q.player(id); return `<span class="tag tag-gray">#${p.number} ${p.name}</span>`; }).join('')}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">${finished ? '比赛数据' : '比赛数据记录'}</div>
+            ${finished ? '' : '<button class="btn btn-sm btn-ghost" id="editStats">录入数据</button>'}</div>
+          <div id="statsBody"></div>
+        </div>
+      </div>
+
+      ${finished ? `<div class="card section-gap">
+        <div class="card-title" style="margin-bottom:10px">${icon('refresh')} 比赛复盘（客观数据摘要）</div>
+        <div id="review"></div>
+      </div>` : ''}`;
+
+    /* 数据网格 */
+    const statsBody = c.querySelector('#statsBody');
+    function statFields() {
+      return [
+        ['一传到位', 'pass_success'], ['发球得分', 'serve_score'], ['发球失误', 'serve_error'],
+        ['扣球得分', 'spike_score'], ['扣球失误', 'spike_error'], ['拦网得分', 'block_score'],
+        ['防守成功', 'defense_success'], ['得分', 'score'], ['失分', 'against']
+      ];
+    }
+    function renderStats(readonly) {
+      const s = m.stats || {};
+      statsBody.innerHTML = `<div class="grid g-3">
+        ${statFields().map(f => `<div style="border:1px solid var(--line);border-radius:10px;padding:11px 13px">
+          <div style="font-size:12px;color:var(--ink-3)">${f[0]}</div>
+          ${readonly ? `<div style="font-size:21px;font-weight:800;margin-top:2px">${s[f[1]] ?? '—'}</div>`
+            : `<input class="input" style="margin-top:4px;padding:7px 9px" type="number" data-k="${f[1]}" value="${s[f[1]] ?? ''}">`}
+        </div>`).join('')}
+      </div>`;
+    }
+    renderStats(finished);
+
+    if (!finished) {
+      c.querySelector('#editStats').onclick = () => {
+        renderStats(false);
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary btn-block';
+        btn.style.marginTop = '13px';
+        btn.innerHTML = icon('save') + ' 保存并结束比赛';
+        statsBody.appendChild(btn);
+        btn.onclick = () => {
+          const st = {};
+          statsBody.querySelectorAll('[data-k]').forEach(i => st[i.getAttribute('data-k')] = Number(i.value) || 0);
+          m.stats = st;
+          // 依据得失分客观生成胜负（不做能力评价）
+          m.status = 'finished';
+          m.result = st.score >= st.against ? 'W' : 'L';
+          m.score = '3:2';
+          L.saved = true;
+          VBM.toast('比赛数据已保存，已进入复盘，数据汇入球队分析', 'ok');
+          VBM.go('match/' + m.id);
+        };
+      };
+    }
+
+    /* 复盘摘要（基于客观统计，不评价个人） */
+    if (finished) {
+      const s = m.stats;
+      const passRate = Math.round(s.pass_success / (s.pass_success + 20) * 100);
+      const spikeEff = Math.round(s.spike_score / (s.spike_score + s.spike_error) * 100);
+      c.querySelector('#review').innerHTML = `<div class="grid g-4">
+        ${[
+          ['一传到位次数', s.pass_success], ['扣球效率', spikeEff + '%'],
+          ['发球净得分', s.serve_score - s.serve_error], ['拦网得分', s.block_score],
+          ['防守成功', s.defense_success], ['总得分', s.score],
+          ['总失分', s.against], ['净胜分', s.score - s.against]
+        ].map(x => `<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px">
+          <div style="font-size:12px;color:var(--ink-3)">${x[0]}</div>
+          <div style="font-size:20px;font-weight:800;margin-top:2px">${x[1]}</div></div>`).join('')}
+      </div>
+      <div class="info-tip" style="margin-top:14px">${icon('info')} 复盘仅汇总客观技术统计与得失分，供教练/队长参考后续训练安排，系统不对球员个人能力做自动评价。</div>`;
+    }
+
+    c.querySelector('[data-back]').onclick = () => VBM.go('matches');
+    const go = c.querySelector('[data-go]');
+    if (go) go.onclick = () => VBM.go(go.getAttribute('data-go'));
+  };
+})();
+
+/* ===== js/pages/analytics.js ===== */
+/* 球队数据分析 Dashboard */
+(function () {
+  const VBM = window.VBM;
+  const { icon } = VBM;
+  VBM.pages = VBM.pages || {};
+
+  VBM.pages.analytics = function (c) {
+    const D = VBM.D, S = VBM.q.teamSummary();
+    let timeRange = 'month'; // week/month/term
+    let posFilter = '全部';
+    let metric = 'attendance';
+
+    c.innerHTML = `
+      <div class="page-head">
+        <div><div class="page-title">球队数据分析</div>
+          <div class="page-desc">记录 → 统计 → 趋势 → 异常提醒 → 信息辅助；系统不做“AI 自动评价球员”</div></div>
+      </div>
+
+      <!-- 筛选 -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="toolbar" style="margin-bottom:0">
+          <span style="font-size:13px;color:var(--ink-3)">时间范围</span>
+          <div class="seg" id="timeSeg">
+            <button data-v="week">本周</button><button data-v="month" class="active">本月</button><button data-v="term">本学期</button>
+          </div>
+          <span style="font-size:13px;color:var(--ink-3);margin-left:8px">位置</span>
+          <select class="select" id="posSel">
+            <option>全部</option>${D.POSITIONS.map(p => `<option>${p}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <!-- 训练数据卡片 -->
+      <div class="grid g-5" style="margin-bottom:18px">
+        ${[
+          ['本月出勤率', S.attendance, 'trend', '#722F86'],
+          ['训练完成率', S.completion, 'target', '#3E79C9'],
+          ['一传到位率', S.pass, 'volleyball', '#2E9E6B'],
+          ['扣球成功率', S.spike, 'trend', '#D9922B'],
+          ['发球得分率', S.serve, 'target', '#B05A9E']
+        ].map(x => `<div class="stat-card"><div class="sc-top"><span class="sc-label">${x[0]}</span>
+          <span class="sc-ico" style="background:var(--purple-soft);color:${x[3]}">${icon(x[2])}</span></div>
+          <div class="sc-value">${x[1]}<small>%</small></div></div>`).join('')}
+      </div>
+
+      <div class="grid g-2">
+        <div class="card">
+          <div class="card-head"><div class="card-title">出勤率趋势</div></div>
+          <div id="attChart"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">技术数据趋势</div></div>
+          <div id="techChart"></div>
+        </div>
+      </div>
+
+      <div class="card section-gap">
+        <div class="card-head">
+          <div class="card-title">球员数据对比</div>
+          <div class="seg" id="metricSeg">
+            ${[
+              ['attendance', '出勤率'], ['pass', '一传到位率'], ['spike', '扣球成功率'], ['serve', '发球得分率']
+            ].map((m, i) => `<button data-v="${m[0]}" class="${i === 0 ? 'active' : ''}">${m[1]}</button>`).join('')}
+          </div>
+        </div>
+        <div id="compareChart"></div>
+      </div>
+
+      <div class="card section-gap">
+        <div class="card-title" style="margin-bottom:10px">${icon('alert')} 异常提醒（仅客观数据）</div>
+        <div id="anomList"></div>
+      </div>`;
+
+    /* 出勤率折线（时间范围影响） */
+    const labels = timeRange === 'week' ? ['周一', '周二', '周三', '周五'] : ['周1', '周2', '周3', '周4'];
+    function attData() {
+      if (timeRange === 'term') return [90, 89, 92, 91];
+      return D.teamTrend.attendance;
+    }
+    c.querySelector('#attChart').appendChild(
+      VBM.charts.lineChart(attData(), labels, { color: '#722F86', unit: '%', min: 80, max: 100 })
+    );
+
+    c.querySelector('#techChart').appendChild(VBM.charts.multiLine([
+      { name: '一传到位率', data: D.teamTrend.pass, color: '#722F86' },
+      { name: '扣球成功率', data: D.teamTrend.spike, color: '#D9922B' },
+      { name: '发球得分率', data: D.teamTrend.serve, color: '#3E79C9' },
+      { name: '拦网成功率', data: D.teamTrend.block, color: '#2E9E6B' }
+    ], ['周1', '周2', '周3', '周4'], { min: 10, max: 70 }));
+
+    /* 球员对比柱状图 */
+    const metricMap = {
+      attendance: p => p.attendance_rate,
+      pass: p => p.pass_rate,
+      spike: p => p.spike_success_rate,
+      serve: p => p.serve_score_rate
+    };
+    const compareBox = c.querySelector('#compareChart');
+    function renderCompare() {
+      let list = D.players;
+      if (posFilter !== '全部') list = list.filter(p => p.position === posFilter);
+      list = [...list].sort((a, b) => metricMap[metric](b) - metricMap[metric](a));
+      compareBox.innerHTML = '';
+      compareBox.appendChild(VBM.charts.barChart(
+        list.map(metricMap[metric]), list.map(p => p.name),
+        { color: VBM.charts.PAL[0], max: 100 }
+      ));
+    }
+    renderCompare();
+
+    /* 异常 */
+    const anomalies = VBM.q.attendanceAnomalies();
+    c.querySelector('#anomList').innerHTML = anomalies.length ? anomalies.map(a =>
+      `<div class="lineup-alert la-info" style="margin-bottom:8px">${icon('info')}<div><strong>${a.player.name}</strong>（${a.player.position}）近 ${a.total} 次训练 ${a.bad} 次非出勤。系统仅提示客观出勤，不做能力/健康判断。</div></div>`
+    ).join('') : '<div class="lineup-alert la-ok">' + icon('check') + '暂无出勤异常。</div>';
+    // 数据波动提醒
+    c.querySelector('#anomList').insertAdjacentHTML('beforeend',
+      `<div class="lineup-alert la-info">${icon('trend')}<div>本周一传到位率较上周下降 5%（63%→58%），建议增加接发球训练（建议项，最终由教练/队长决定）。</div></div>`);
+
+    /* 交互 */
+    c.querySelector('#timeSeg').querySelectorAll('button').forEach(b => b.onclick = () => {
+      timeRange = b.getAttribute('data-v');
+      c.querySelector('#timeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      const att = c.querySelector('#attChart'); att.innerHTML = '';
+      att.appendChild(VBM.charts.lineChart(attData(), labels, { color: '#722F86', unit: '%', min: 80, max: 100 }));
+    });
+    c.querySelector('#posSel').onchange = e => { posFilter = e.target.value; renderCompare(); };
+    c.querySelector('#metricSeg').querySelectorAll('button').forEach(b => b.onclick = () => {
+      metric = b.getAttribute('data-v');
+      c.querySelector('#metricSeg').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      renderCompare();
+    });
+    if (VBM.state.role === 'player') VBM.playerize(c);
+  };
+})();
+
+/* ===== js/pages/notifications.js ===== */
+/* 通知中心 */
+(function () {
+  const VBM = window.VBM;
+  const { icon } = VBM;
+  VBM.pages = VBM.pages || {};
+
+  const TYPE_ICO = {
+    '训练': { ico: 'calendar', bg: 'var(--purple-soft)', fg: 'var(--purple)' },
+    '出勤': { ico: 'clipboard', bg: 'var(--blue-bg)', fg: 'var(--blue)' },
+    '比赛': { ico: 'trophy', bg: 'var(--green-bg)', fg: 'var(--green)' },
+    '数据': { ico: 'chart', bg: 'var(--amber-bg)', fg: 'var(--amber)' }
+  };
+
+  VBM.pages.notifications = function (c) {
+    const D = VBM.D;
+    let filter = '全部';
+    c.innerHTML = `
+      <div class="page-head">
+        <div><div class="page-title">通知中心</div>
+          <div class="page-desc">统一收敛微信群式的零散通知：训练 / 出勤 / 比赛 / 数据</div></div>
+        <div class="head-actions"><button class="btn btn-ghost" id="readAll">${icon('check')} 全部已读</button></div>
+      </div>
+      <div class="notice-filter" id="filter">
+        ${['全部', '训练', '比赛', '出勤', '数据'].map((t, i) =>
+          `<button class="notice-tab ${i === 0 ? 'active' : ''}" data-t="${t}">${t}</button>`).join('')}
+      </div>
+      <div id="list"></div>`;
+
+    const listBox = c.querySelector('#list');
+    function render() {
+      const list = filter === '全部' ? D.notices : D.notices.filter(n => n.type === filter);
+      listBox.innerHTML = list.length ? list.map(n => {
+        const m = TYPE_ICO[n.type];
+        return `<div class="notice-item">
+          <span class="ni-ico" style="background:${m.bg};color:${m.fg}">${icon(m.ico)}</span>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;gap:10px"><h4>${n.title}</h4>
+              <time>${n.when}</time></div>
+            <p>${n.body}</p>
+            <div style="margin-top:6px"><span class="tag tag-gray">${n.type}通知</span>
+              ${n.unread ? '<span class="tag tag-purple">未读</span>' : '<span class="tag tag-gray">已读</span>'}</div>
+          </div>
+        </div>`;
+      }).join('') : '<div class="empty">该分类下暂无通知</div>';
+    }
+    render();
+
+    c.querySelector('#filter').querySelectorAll('button').forEach(b => b.onclick = () => {
+      filter = b.getAttribute('data-t');
+      c.querySelector('#filter').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      render();
+    });
+    c.querySelector('#readAll').onclick = () => {
+      D.notices.forEach(n => n.unread = false);
+      document.getElementById('notifyDot').style.display = 'none';
+      render(); VBM.toast('已全部标记为已读', 'ok');
+    };
+  };
+})();
+
+/* ===== js/pages/settings.js ===== */
+/* 系统设置：球队信息 / 权限（球员/教练/队长） / 数据管理 / 通知设置 */
+(function () {
+  const VBM = window.VBM;
+  const { icon } = VBM;
+  VBM.pages = VBM.pages || {};
+
+  const TABS = ['球队信息', '球员权限', '教练权限', '队长权限', '数据管理', '通知设置'];
+  const PERMS = ['查看训练计划', '创建/修改训练', '训练签到', '管理球员档案', '配置比赛阵容', '记录比赛数据', '查看球队数据分析', '导出球队数据'];
+
+  VBM.pages.settings = function (c) {
+    let tab = TABS[0];
+    c.innerHTML = `
+      <div class="page-head"><div><div class="page-title">系统设置</div>
+        <div class="page-desc">角色权限清晰分离：最终训练/阵容/人员决策归教练与队长，系统仅记录与辅助</div></div></div>
+      <div class="setting-nav" id="tabs">
+        ${TABS.map((t, i) => `<button class="set-tab ${i === 0 ? 'active' : ''}" data-t="${t}">${t}</button>`).join('')}
+      </div>
+      <div id="body"></div>`;
+
+    const body = c.querySelector('#body');
+
+    function render() {
+      if (tab === '球队信息') renderTeam();
+      else if (tab.includes('权限')) renderPerm();
+      else if (tab === '数据管理') renderData();
+      else renderNotify();
+    }
+
+    function renderTeam() {
+      body.innerHTML = `<div class="card">
+        <div class="form-grid">
+          <div class="form-field"><label>球队名称</label><input class="input" value="南京大学女子排球队"></div>
+          <div class="form-field"><label>所属院校</label><input class="input" value="南京大学"></div>
+          <div class="form-field"><label>主运动项目</label>
+            <select class="select-input"><option>排球</option><option>篮球</option><option>足球</option></select></div>
+          <div class="form-field"><label>赛季</label><input class="input" value="2026 赛季"></div>
+          <div class="form-field"><label>常驻训练场馆</label><input class="input" value="南京大学体育馆"></div>
+          <div class="form-field"><label>球队人数</label><input class="input" value="18"></div>
+          <div class="form-field full"><label>球队简介</label>
+            <textarea class="textarea">南京大学女子排球队，代表南京大学参加各级高校排球赛事，每周固定训练 4 次。</textarea></div>
+        </div>
+        <div style="text-align:right;margin-top:16px"><button class="btn btn-primary" onclick="VBM.toast('球队信息已保存','ok')">保存</button></div>
+      </div>`;
+    }
+
+    function renderPerm() {
+      // 不同角色默认权限矩阵
+      const matrix = {
+        '球员权限': [1, 0, 0, 0, 0, 0, 0, 0],
+        '教练权限': [1, 1, 1, 1, 1, 1, 1, 1],
+        '队长权限': [1, 1, 1, 1, 1, 1, 1, 0]
+      };
+      const vals = matrix[tab];
+      body.innerHTML = `<div class="card">
+        <div class="info-tip" style="margin-bottom:14px">${icon('shield')} 权限最小化分配。球员默认为只读视角；教练拥有完整管理权限；队长除“导出球队数据”外拥有管理权限。</div>
+        <div class="table-wrap"><table class="data-table perm-table">
+          <thead><tr><th>权限项</th><th>${tab.replace('权限', '')}</th><th style="width:120px">开关</th></tr></thead>
+          <tbody>${PERMS.map((p, i) => `<tr>
+            <td>${p}</td><td><span class="tag ${vals[i] ? 'tag-green' : 'tag-gray'}">${vals[i] ? '允许' : '不可用'}</span></td>
+            <td><label class="switch"><input type="checkbox" ${vals[i] ? 'checked' : ''}><span class="sl"></span></label></td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        <div style="text-align:right;margin-top:14px"><button class="btn btn-primary" onclick="VBM.toast('权限设置已保存','ok')">保存权限</button></div>
+      </div>`;
+    }
+
+    function renderData() {
+      body.innerHTML = `
+        <div class="grid g-2">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">${icon('database')} 数据导出 / 备份</div>
+            ${['球员档案数据', '训练与出勤数据', '比赛与技术统计', '球队阵容数据'].map(x =>
+              `<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px dashed var(--line)">
+                <span>${x}</span><button class="btn btn-sm btn-soft" onclick="VBM.toast('${x}导出任务已创建（模拟）','ok')">${icon('download')} 导出</button></div>`).join('')}
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">${icon('alert')} 危险操作</div>
+            <p style="font-size:13px;color:var(--ink-2);margin-bottom:14px">清空数据不可恢复，仅建议在赛季归档后操作。归档数据保留只读。</p>
+            <button class="btn btn-danger-ghost" style="margin-right:8px" onclick="VBM.confirmBox('确认归档本赛季全部数据？归档后将转为只读。',()=>VBM.toast('已归档（模拟）','ok'))">归档本赛季</button>
+            <button class="btn btn-danger-ghost" onclick="VBM.confirmBox('确认清空全部模拟数据？此操作不可恢复。',()=>VBM.toast('已取消清空（演示保护）','info'))">清空数据</button>
+          </div>
+        </div>`;
+    }
+
+    function renderNotify() {
+      const items = ['训练通知（计划/变更）', '出勤提醒（未签到/异常）', '比赛提醒（倒计时/结果）', '数据提醒（指标波动）'];
+      body.innerHTML = `<div class="card">
+        ${items.map(x => `<div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px dashed var(--line)">
+          <span>${x}</span><label class="switch"><input type="checkbox" checked><span class="sl"></span></label></div>`).join('')}
+        <div class="form-field" style="margin-top:16px"><label>提醒方式</label>
+          <div style="display:flex;gap:16px;margin-top:6px">
+            <label class="dot-tag"><input type="checkbox" checked> 站内通知</label>
+            <label class="dot-tag"><input type="checkbox"> 邮件</label>
+            <label class="dot-tag"><input type="checkbox"> 微信（预留）</label>
+          </div></div>
+        <div style="text-align:right;margin-top:16px"><button class="btn btn-primary" onclick="VBM.toast('通知设置已保存','ok')">保存</button></div>
+      </div>`;
+    }
+
+    c.querySelector('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => {
+      tab = b.getAttribute('data-t');
+      c.querySelector('#tabs').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      render();
+    });
+    render();
+  };
+})();
+
+/* ===== js/app.js ===== */
+/* =========================================================
+ * app.js — 路由 / 导航 / 顶栏 / 通知 / 角色切换
+ * ========================================================= */
+(function () {
+  const VBM = window.VBM;
+  const { icon, hydrate } = VBM;
+  const main = document.getElementById('main');
+
+  /* ---------------- 导航定义 ---------------- */
+  const NAV = [
+    { sec: '工作台' },
+    { key: 'home', label: '首页', ico: 'home', route: 'home' },
+    { sec: '日常管理' },
+    { key: 'players', label: '球员管理', ico: 'users', route: 'players' },
+    { key: 'training', label: '训练计划', ico: 'calendar', route: 'training' },
+    { key: 'attendance', label: '出勤管理', ico: 'clipboard', route: 'attendance' },
+    { sec: '比赛与数据' },
+    { key: 'lineup', label: '阵容配置', ico: 'grid', route: 'lineup?matchId=M6' },
+    { key: 'matches', label: '比赛管理', ico: 'trophy', route: 'matches' },
+    { key: 'analytics', label: '数据分析', ico: 'chart', route: 'analytics' },
+    { key: 'notifications', label: '通知中心', ico: 'bell', route: 'notifications', badge: true },
+    { key: 'settings', label: '系统设置', ico: 'settings', route: 'settings', coachOnly: true }
+  ];
+
+  function buildNav() {
+    const nav = document.getElementById('nav');
+    nav.innerHTML = NAV.map(n => {
+      if (n.sec) return `<div class="nav-sec">${n.sec}</div>`;
+      if (n.coachOnly && VBM.state.role === 'player') return '';
+      return `<a class="nav-item" data-route="${n.route}" href="#${n.route}">
+        ${icon(n.ico)}<span>${n.label}</span>
+        ${n.badge ? '<span class="nav-badge">' + VBM.D.notices.filter(x => x.unread).length + '</span>' : ''}
+      </a>`;
+    }).join('');
+    hydrate(nav);
+  }
+
+  /* ---------------- 路由 ---------------- */
+  const routes = [
+    { re: /^home$/, page: 'home' },
+    { re: /^players$/, page: 'players' },
+    { re: /^player\/(\d+)$/, page: 'playerDetail' },
+    { re: /^training\/new$/, page: 'createTraining' },
+    { re: /^training\/detail$/, page: 'trainingDetail' },
+    { re: /^training$/, page: 'training' },
+    { re: /^attendance\/checkin$/, page: 'checkin' },
+    { re: /^attendance$/, page: 'attendance' },
+    { re: /^lineup$/, page: 'lineup' },
+    { re: /^matches$/, page: 'matches' },
+    { re: /^match\/([\w\d]+)$/, page: 'matchDetail' },
+    { re: /^analytics$/, page: 'analytics' },
+    { re: /^notifications$/, page: 'notifications' },
+    { re: /^settings$/, page: 'settings' }
+  ];
+
+  function parseQuery(str) {
+    const o = {};
+    str.split('&').filter(Boolean).forEach(kv => { const [k, v] = kv.split('='); o[k] = decodeURIComponent(v || ''); });
+    return o;
+  }
+
+  let currentPath = 'home';
+
+  function renderRoute(rawPath) {
+    const raw = (rawPath || currentPath || 'home').replace(/^#/, '');
+    currentPath = raw;
+    const [path, qstr] = raw.split('?');
+    const params = parseQuery(qstr || '');
+    let match = routes.find(r => r.re.test(path));
+    if (!match) { match = routes[0]; }
+    // 将路径中的捕获组映射为参数
+    const cap = path.match(match.re);
+    if (cap && cap.length > 1) {
+      if (match.page === 'playerDetail') params.id = cap[1];
+      if (match.page === 'matchDetail') params.id = cap[1];
+    }
+    // 球员角色不允许进入设置
+    if (match.page === 'settings' && VBM.state.role === 'player') { VBM.go('home'); return; }
+
+    try { window.scrollTo(0, 0); } catch (e) {}
+    main.innerHTML = '';
+    const fn = VBM.pages[match.page];
+    if (fn) fn(main, params); else main.innerHTML = '<div class="empty">页面建设中</div>';
+    setActiveNav(path);
+    document.getElementById('sidebar').classList.remove('open');
+  }
+
+  // 统一导航入口：不依赖浏览器对 hash 链接 / hashchange 的支持
+  function navigate(path) {
+    const raw = String(path || 'home').replace(/^#/, '');
+    if (raw === currentPath) {
+      // 即便路径相同也确保地址栏同步
+      try { if (location.hash.slice(1) !== raw) location.hash = raw; } catch (e) {}
+      return;
+    }
+    try { location.hash = raw; } catch (e) {} // 某些预览环境可能限制，忽略后仍直接渲染
+    renderRoute(raw);
+  }
+
+  function setActiveNav(path) {
+    document.querySelectorAll('.nav-item').forEach(a => {
+      const r = a.getAttribute('data-route').split('?')[0];
+      const cur = path.split('/')[0];
+      a.classList.toggle('active', r === cur || (r === 'home' && cur === ''));
+    });
+  }
+
+  VBM.go = navigate;
+
+  /* 拦截所有 hash 链接点击（导航栏 / 通知面板 / 页内链接），直接渲染，
+     避免某些内嵌预览 WebView 不处理锚点跳转或 hashchange。 */
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const dest = a.getAttribute('href').slice(1);
+    if (!dest) return;
+    e.preventDefault();
+    navigate(dest);
+  });
+
+  /* ---------------- 顶栏日期 ---------------- */
+  function fillDate() {
+    const d = new Date(VBM.D.today + 'T00:00:00');
+    document.getElementById('tbDate').textContent =
+      `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 ${['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][d.getDay()]}`;
+  }
+
+  /* ---------------- 通知下拉 ---------------- */
+  const TYPE_ICO = {
+    '训练': { ico: 'calendar', bg: 'var(--purple-soft)', fg: 'var(--purple)' },
+    '出勤': { ico: 'clipboard', bg: 'var(--blue-bg)', fg: 'var(--blue)' },
+    '比赛': { ico: 'trophy', bg: 'var(--green-bg)', fg: 'var(--green)' },
+    '数据': { ico: 'chart', bg: 'var(--amber-bg)', fg: 'var(--amber)' }
+  };
+  function buildNotifyPanel() {
+    const unread = VBM.D.notices.filter(n => n.unread).length;
+    document.getElementById('notifyDot').style.display = unread ? 'block' : 'none';
+    const panel = document.getElementById('notifyPanel');
+    panel.innerHTML = `<div class="np-head"><strong>通知</strong><span class="tag tag-purple">${unread} 条未读</span></div>
+      ${VBM.D.notices.slice(0, 5).map(n => {
+        const m = TYPE_ICO[n.type];
+        return `<div class="np-item">
+          <span class="np-ico" style="background:${m.bg};color:${m.fg}">${icon(m.ico)}</span>
+          <div style="flex:1"><p>${n.body}</p><time>${n.when}</time></div>
+        </div>`;
+      }).join('')}
+      <a class="np-all" href="#notifications">查看全部通知</a>`;
+  }
+  document.getElementById('notifyBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    document.getElementById('notifyPanel').classList.toggle('open');
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.notify-wrap')) document.getElementById('notifyPanel').classList.remove('open');
+  });
+
+  /* ---------------- 角色切换（权限演示） ---------------- */
+  document.querySelectorAll('.rs-btn').forEach(b => b.addEventListener('click', () => {
+    const role = b.getAttribute('data-role');
+    VBM.state.role = role;
+    document.querySelectorAll('.rs-btn').forEach(x => x.classList.toggle('active', x === b));
+    document.getElementById('tbRole').textContent = role === 'coach' ? '队长' : '球员';
+    buildNav();
+    renderRoute();
+    VBM.toast(role === 'coach' ? '已切换到教练/队长视角（完整管理权限）' : '已切换到球员视角（只读）', 'info');
+  }));
+
+  /* 球员只读化处理 */
+  VBM.playerize = function (c) {
+    const hideSel = ['.head-actions', '#addPlayer', '#newTr', '#allPresent', '#batch', '#save', '#saveLineup', '#altLineup', '#editStats', '#addMatch', '#edit'];
+    hideSel.forEach(s => c.querySelectorAll(s).forEach(n => n.style.display = 'none'));
+    const note = document.createElement('div');
+    note.className = 'readonly-note';
+    note.innerHTML = icon('shield') + '球员视角：仅可查看训练计划、个人记录/数据、比赛安排、出勤与阵容，不能修改或决定首发。';
+    c.insertBefore(note, c.firstChild);
+  };
+
+  /* 移动端菜单 */
+  document.getElementById('menuToggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+  /* ---------------- 初始化 ---------------- */
+  buildNav();
+  fillDate();
+  buildNotifyPanel();
+  // 浏览器前进/后退（若环境支持 hashchange）
+  window.addEventListener('hashchange', function () {
+    const raw = (location.hash || '#home').slice(1);
+    if (raw !== currentPath) renderRoute(raw);
+  });
+  // 初始路由：优先用地址栏已有 hash，否则首页
+  const initial = (location.hash || '#home').slice(1) || 'home';
+  renderRoute(initial);
+})();
+
+</script>
+</body>
+</html>
